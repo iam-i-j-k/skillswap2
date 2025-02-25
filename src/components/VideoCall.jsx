@@ -64,15 +64,24 @@ function VideoCall() {
 
           {!isConnected && (
             <div className="mt-4 flex items-center space-x-4">
-              <div className="bg-white/10 rounded-lg p-3">
-                <p className="text-white text-sm">Your ID: {peerId}</p>
-              </div>
-              <button
-                onClick={generateShareLink}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-              >
-                Share Link
-              </button>
+              <div className="mb-4 text-center">
+  <p className="font-semibold">Your Peer ID:</p>
+  <div className="flex items-center gap-2">
+    <input
+      type="text"
+      value={peerId}
+      readOnly
+      className="w-full border rounded-md p-2 text-center"
+    />
+    <button
+      onClick={() => navigator.clipboard.writeText(peerId)}
+      className="bg-blue-500 text-white px-4 py-2 rounded-md"
+    >
+      Copy
+    </button>
+  </div>
+</div>
+
               <div className="flex-1">
                 <input
                   type="text"
