@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Peer from "peerjs";
-import { useRouter } from "next/router";
+import { useParams } from "react-router-dom";
 
 function VideoCall() {
   const [peerId, setPeerId] = useState("");
@@ -9,10 +9,9 @@ function VideoCall() {
   const peerRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const localVideoRef = useRef(null);
-  const router = useRouter();
-
+  
   useEffect(() => {
-    const roomId = router.query.room;
+    const { id } = useParams();
     if (!roomId) return;
     
     const peer = new Peer(roomId); // Use room ID as Peer ID
