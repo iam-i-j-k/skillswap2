@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Peer from "peerjs";
+import { useRouter } from "next/router"; // If using Next.js
 
 function VideoCall() {
+  const router = useRouter(); // Get URL params
   const [peerId, setPeerId] = useState("");
   const [remotePeerId, setRemotePeerId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
@@ -10,7 +12,6 @@ function VideoCall() {
   const localVideoRef = useRef(null);
 
   useEffect(() => {
-    // Get peer ID from URL if present
     const urlParams = new URLSearchParams(window.location.search);
     const remoteIdFromURL = urlParams.get("peer");
     if (remoteIdFromURL) setRemotePeerId(remoteIdFromURL);
@@ -38,6 +39,7 @@ function VideoCall() {
   }, []);
 
   const startCall = () => {
+    if (!remotePeerId) return alert("Enter a valid Peer ID!");
     const peer = peerRef.current;
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       localVideoRef.current.srcObject = stream;
@@ -49,9 +51,8 @@ function VideoCall() {
     });
   };
 
-  // Generate a sharable link
   const generateShareLink = () => {
-    const inviteLink = `${window.location.origin}?peer=${peerId}`;
+    const inviteLink = `${window.location.origin}/video-call/1?peer=${peerId}`;
     navigator.clipboard.writeText(inviteLink);
     alert(`Share this link: ${inviteLink}`);
   };
