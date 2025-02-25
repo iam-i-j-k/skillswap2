@@ -3,25 +3,25 @@ import Peer from "peerjs";
 import { useParams } from "react-router-dom";
 
 function VideoCall() {
+  const { id } = useParams(); // Get room ID from URL
   const [peerId, setPeerId] = useState("");
   const [remotePeerId, setRemotePeerId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const peerRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const localVideoRef = useRef(null);
-  
+
   useEffect(() => {
-    const { id } = useParams();
-    if (!roomId) return;
-    
-    const peer = new Peer(roomId); // Use room ID as Peer ID
+    if (!id) return;
+
+    const peer = new Peer(id); // Use URL ID as Peer ID
     peerRef.current = peer;
-    
-    peer.on("open", (id) => {
-      setPeerId(id);
-      console.log("My Peer ID:", id);
+
+    peer.on("open", (peerId) => {
+      setPeerId(peerId);
+      console.log("My Peer ID:", peerId);
     });
-    
+
     peer.on("call", (call) => {
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
         localVideoRef.current.srcObject = stream;
@@ -32,13 +32,20 @@ function VideoCall() {
         });
       });
     });
-  }, [router.query.room]);
-  
+
+    return () => {
+      peer.disconnect();
+      peer.destroy();
+    };
+  }, [id]);
+
   const startCall = () => {
+    if (!remotePeerId) return;
+
     const peer = peerRef.current;
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       localVideoRef.current.srcObject = stream;
-      const call = peer.call(router.query.room, stream);
+      const call = peer.call(remotePeerId, stream);
       call.on("stream", (remoteStream) => {
         remoteVideoRef.current.srcObject = remoteStream;
         setIsConnected(true);
@@ -54,8 +61,14 @@ function VideoCall() {
           {!isConnected && (
             <div className="mt-4 flex items-center space-x-4">
               <div className="bg-white/10 rounded-lg p-3">
-                <p className="text-white text-sm">Room ID: {router.query.room}</p>
+                <p className="text-white text-sm">Room ID: {id}</p>
               </div>
+              <input
+                type="text"
+                placeholder="Enter Remote Peer ID"
+                onChange={(e) => setRemotePeerId(e.target.value)}
+                className="p-2 rounded-md"
+              />
               <button
                 onClick={startCall}
                 className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
