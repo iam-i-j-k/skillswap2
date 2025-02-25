@@ -1,29 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
 import Peer from "peerjs";
-import { useRouter } from "next/router"; // If using Next.js
+import { useRouter } from "next/router";
 
 function VideoCall() {
-  const router = useRouter(); // Get URL params
   const [peerId, setPeerId] = useState("");
-  const [remotePeerId, setRemotePeerId] = useState("");
+  const [remotePeerId, setRemotePeerId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const peerRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const localVideoRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const remoteIdFromURL = urlParams.get("peer");
-    if (remoteIdFromURL) setRemotePeerId(remoteIdFromURL);
-
-    const peer = new Peer();
+    const roomId = router.query.room;
+    if (!roomId) return;
+    
+    const peer = new Peer(roomId); // Use room ID as Peer ID
     peerRef.current = peer;
-
+    
     peer.on("open", (id) => {
       setPeerId(id);
-      localStorage.setItem("peerId", id);
+      console.log("My Peer ID:", id);
     });
-
+    
     peer.on("call", (call) => {
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
         localVideoRef.current.srcObject = stream;
@@ -34,16 +33,13 @@ function VideoCall() {
         });
       });
     });
-
-    return () => peer.destroy();
-  }, []);
-
+  }, [router.query.room]);
+  
   const startCall = () => {
-    if (!remotePeerId) return alert("Enter a valid Peer ID!");
     const peer = peerRef.current;
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       localVideoRef.current.srcObject = stream;
-      const call = peer.call(remotePeerId, stream);
+      const call = peer.call(router.query.room, stream);
       call.on("stream", (remoteStream) => {
         remoteVideoRef.current.srcObject = remoteStream;
         setIsConnected(true);
@@ -51,48 +47,25 @@ function VideoCall() {
     });
   };
 
-  const generateShareLink = () => {
-    const inviteLink = `${window.location.origin}/video-call/1?peer=${peerId}`;
-    navigator.clipboard.writeText(inviteLink);
-    alert(`Share this link: ${inviteLink}`);
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600">
           <h2 className="text-2xl font-bold text-white">Video Call</h2>
-
           {!isConnected && (
             <div className="mt-4 flex items-center space-x-4">
               <div className="bg-white/10 rounded-lg p-3">
-                <p className="text-white text-sm">Your ID: {peerId}</p>
-              </div>
-              <button
-                onClick={generateShareLink}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-              >
-                Share Link
-              </button>
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Enter peer ID to call"
-                  value={remotePeerId}
-                  onChange={(e) => setRemotePeerId(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
-                />
+                <p className="text-white text-sm">Room ID: {router.query.room}</p>
               </div>
               <button
                 onClick={startCall}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
               >
                 Start Call
               </button>
             </div>
           )}
         </div>
-
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
@@ -109,13 +82,9 @@ function VideoCall() {
               )}
             </div>
           </div>
-
           {isConnected && (
             <div className="mt-6 flex justify-center">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-              >
+              <button onClick={() => window.location.reload()} className="px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
                 End Call
               </button>
             </div>
