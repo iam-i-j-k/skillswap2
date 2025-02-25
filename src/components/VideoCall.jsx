@@ -10,7 +10,6 @@ function VideoCall() {
   const localVideoRef = useRef(null);
 
   useEffect(() => {
-    // Get peer ID from URL if present
     const urlParams = new URLSearchParams(window.location.search);
     const remoteIdFromURL = urlParams.get("peer");
     if (remoteIdFromURL) setRemotePeerId(remoteIdFromURL);
@@ -49,7 +48,6 @@ function VideoCall() {
     });
   };
 
-  // Generate a sharable link
   const generateShareLink = () => {
     const inviteLink = `${window.location.origin}?peer=${peerId}`;
     navigator.clipboard.writeText(inviteLink);
@@ -57,43 +55,52 @@ function VideoCall() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600">
-          <h2 className="text-2xl font-bold text-white">Video Call</h2>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-center">
+          <h2 className="text-2xl font-bold text-white">Live Video Call</h2>
+          <p className="text-white text-sm opacity-80">Connect with others instantly</p>
+        </div>
 
+        {/* Controls */}
+        <div className="p-6">
           {!isConnected && (
-            <div className="mt-4 flex items-center space-x-4">
-              <div className="mb-4 text-center">
-  <p className="font-semibold">Your Peer ID:</p>
-  <div className="flex items-center gap-2">
-    <input
-      type="text"
-      value={peerId}
-      readOnly
-      className="w-full border rounded-md p-2 text-center"
-    />
-    <button
-      onClick={() => navigator.clipboard.writeText(peerId)}
-      className="bg-blue-500 text-white px-4 py-2 rounded-md"
-    >
-      Copy
-    </button>
-  </div>
-</div>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+              {/* Peer ID */}
+              <div className="text-center w-full md:w-auto">
+                <p className="font-semibold">Your Peer ID:</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={peerId}
+                    readOnly
+                    className="w-full border rounded-md p-2 text-center shadow-sm"
+                  />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(peerId)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
 
-              <div className="flex-1">
+              {/* Enter Peer ID */}
+              <div className="w-full flex-1">
                 <input
                   type="text"
-                  placeholder="Enter peer ID to call"
+                  placeholder="Enter Peer ID to call"
                   value={remotePeerId}
                   onChange={(e) => setRemotePeerId(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border focus:ring-2 focus:ring-indigo-400"
                 />
               </div>
+
+              {/* Call Button */}
               <button
                 onClick={startCall}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition transform active:scale-95"
               >
                 Start Call
               </button>
@@ -101,34 +108,51 @@ function VideoCall() {
           )}
         </div>
 
+        {/* Video Section */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-              <video ref={localVideoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+            {/* Local Video */}
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+              <video ref={localVideoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover rounded-lg" />
               <div className="absolute bottom-3 left-3 bg-black/50 text-white text-sm px-3 py-1 rounded-full">You</div>
             </div>
-            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-              <video ref={remoteVideoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
+
+            {/* Remote Video */}
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+              <video ref={remoteVideoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover rounded-lg" />
               <div className="absolute bottom-3 left-3 bg-black/50 text-white text-sm px-3 py-1 rounded-full">Remote</div>
               {!isConnected && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/75">
-                  <p className="text-white">Waiting for connection...</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 text-white text-lg font-semibold animate-pulse">
+                  <p>Waiting for connection...</p>
                 </div>
               )}
             </div>
           </div>
 
+          {/* Call Actions */}
           {isConnected && (
             <div className="mt-6 flex justify-center">
               <button
                 onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                className="px-6 py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition transform active:scale-95"
               >
                 End Call
               </button>
             </div>
           )}
         </div>
+
+        {/* Share Link Button */}
+        {!isConnected && (
+          <div className="p-6 text-center">
+            <button
+              onClick={generateShareLink}
+              className="px-6 py-3 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 transition transform active:scale-95"
+            >
+              Share Call Link
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
