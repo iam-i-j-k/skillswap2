@@ -1,6 +1,5 @@
-"use client"
 
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Peer from "peerjs"
 
 function VideoCall() {
