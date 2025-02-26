@@ -20,7 +20,7 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/chat/:userId" element={
               <ProtectedRoute>
-                <Chat />
+                <ChatPage />
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/login" />} />
