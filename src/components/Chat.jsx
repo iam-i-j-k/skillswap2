@@ -1,44 +1,58 @@
-import React from 'react';
-import { useState, useEffect } from "react";
-import io from "socket.io-client";
-import { MessageSquare, Share2, Phone, Star } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 
-const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
+const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL, {
+  transports: ["websocket"],
+  autoConnect: false
+});
 
-function Chat() {
+function Chat({ userId, receiverId }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [username, setUsername] = useState("User");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Connect socket
+    socket.connect();
+
+    // Register user on WebSocket connection
+    socket.emit("register", userId);
+
+    // Listen for incoming messages
+    socket.on("message", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    // Handle errors
+    socket.on("messageError", (error) => {
+      setError(error.message);
+    });
+
     return () => {
-      socket.off("receiveMessage");
+      socket.off("message");
+      socket.off("messageError");
+      socket.disconnect();
     };
-  }, []);
+  }, [userId]);
 
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      const newMessage = {
-        sender: username,
-        text: message,
-        timestamp: new Date().toLocaleTimeString(),
-      };
+      const newMessage = { senderId: userId, receiverId, text: message };
       socket.emit("sendMessage", newMessage);
-      setMessages((prev) => [...prev, newMessage]);
+      setMessages((prev) => [...prev, newMessage]); // Update local state
       setMessage("");
     }
   };
 
   return (
     <div className="p-4">
-      <h2 className="text-lg font-bold">Chat Room</h2>
+      <h2 className="text-lg font-bold">Chat</h2>
       <div className="border p-3 h-60 overflow-y-auto">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
             <div className="text-sm text-gray-500">
-              {msg.sender} at {msg.timestamp}
+              {msg.senderId === userId ? "You" : "Other"}:
             </div>
             <div className="text-md">{msg.text}</div>
           </div>
@@ -55,11 +69,7 @@ function Chat() {
         <button
           type="submit"
           disabled={!message.trim()}
-          className={`px-4 py-2 rounded-r-lg transition ${
-            message.trim() 
-              ? 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          className="px-4 py-2 bg-purple-600 text-white rounded-r-lg"
         >
           Send
         </button>
