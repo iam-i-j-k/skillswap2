@@ -1,103 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SkillCard from './SkillCard';
 import ChatModal from './ChatModal';
 import { Header } from './Header';
 import Footer from './Footer';
-
-const SAMPLE_USERS = [
-  {
-    id: '1',
-    name: 'Laura White',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    bio: 'Content writer with a knack for storytelling',
-    skillsToTeach: [
-      { id: '17', name: 'Creative Writing', category: 'Writing', description: '', image: '' },
-      { id: '18', name: 'SEO Writing', category: 'Marketing', description: '', image: '' }
-    ],
-    skillsToLearn: [
-      { id: '19', name: 'Digital Marketing', category: 'Marketing', description: '', image: '' },
-      { id: '20', name: 'Social Media Management', category: 'Marketing', description: '', image: '' }
-    ]
-  },
-  {
-    id: '2',
-    name: 'John Doe',
-    avatar: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=400',
-    bio: 'Experienced web developer with a passion for coding',
-    skillsToTeach: [
-      { id: '21', name: 'Web Development', category: 'Programming', description: '', image: '' },
-      { id: '22', name: 'JavaScript', category: 'Programming', description: '', image: '' }
-    ],
-    skillsToLearn: [
-      { id: '23', name: 'UI/UX Design', category: 'Design', description: '', image: '' },
-      { id: '24', name: 'Machine Learning', category: 'Data Science', description: '', image: '' }
-    ]
-  },
-  {
-    id: '3',
-    name: 'Sophia Turner',
-    avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK6nhTPn2KsCEA5oCd19uqp5dHJnB159XXVw&s',
-    bio: 'Graphic designer passionate about creating visually appealing websites',
-    skillsToTeach: [
-      { id: '25', name: 'Graphic Design', category: 'Design', description: '', image: '' },
-      { id: '26', name: 'Branding', category: 'Design', description: '', image: '' }
-    ],
-    skillsToLearn: [
-      { id: '27', name: 'Web Development', category: 'Programming', description: '', image: '' },
-      { id: '28', name: 'Digital Illustration', category: 'Art', description: '', image: '' }
-    ]
-  },
-  {
-    id: '4',
-    name: 'Mark Robinson',
-    avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgKpoOr-PUnAljpxR2LCoihCZqdoGkXYrN5g&s',
-    bio: 'Marketing expert with a focus on SEO and social media strategy',
-    skillsToTeach: [
-      { id: '29', name: 'SEO', category: 'Marketing', description: '', image: '' },
-      { id: '30', name: 'Content Marketing', category: 'Marketing', description: '', image: '' }
-    ],
-    skillsToLearn: [
-      { id: '31', name: 'Web Development', category: 'Programming', description: '', image: '' },
-      { id: '32', name: 'Data Analytics', category: 'Data Science', description: '', image: '' }
-    ]
-  },
-  {
-    id: '5',
-    name: 'James Harris',
-    avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT211pdIhj6EZ5BrcYKBielSwumHCNQr7ShYQ&s',
-    bio: 'Software engineer with a strong background in Python and AI development',
-    skillsToTeach: [
-      { id: '33', name: 'Python', category: 'Programming', description: '', image: '' },
-      { id: '34', name: 'Artificial Intelligence', category: 'Technology', description: '', image: '' }
-    ],
-    skillsToLearn: [
-      { id: '35', name: 'Web Development', category: 'Programming', description: '', image: '' },
-      { id: '36', name: 'Cloud Computing', category: 'Technology', description: '', image: '' }
-    ]
-  },
-  {
-    id: '6',
-    name: 'Olivia Johnson',
-    avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_iN2TKAq-VJfntDolRaLEH2fTQWy1nj2PtQ&s',
-    bio: 'Full-stack developer with expertise in React and Node.js',
-    skillsToTeach: [
-      { id: '37', name: 'React', category: 'Programming', description: '', image: '' },
-      { id: '38', name: 'Node.js', category: 'Programming', description: '', image: '' }
-    ],
-    skillsToLearn: [
-      { id: '39', name: 'Data Science', category: 'Data Science', description: '', image: '' },
-      { id: '40', name: 'UI/UX Design', category: 'Design', description: '', image: '' }
-    ]
-  }
-];
+import axios from 'axios';
 
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [users, setUsers] = useState([]);
 
-  const filteredUsers = SAMPLE_USERS.filter(user =>
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users`); // Adjust the API endpoint as needed
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter(user =>
     (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.skillsToTeach.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     user.skillsToLearn.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase()))) &&
@@ -135,10 +63,10 @@ const Home = () => {
           ))}
         </div>
       </div>
-       {isChatOpen && selectedUser && (
+      {isChatOpen && selectedUser && (
         <ChatModal user={selectedUser} onClose={() => setIsChatOpen(false)} />
-      )} 
-    <Footer />
+      )}
+      <Footer />
     </div>
   );
 };
