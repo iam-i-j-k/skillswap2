@@ -25,12 +25,18 @@ const Home = () => {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user =>
-    (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.skillsToTeach.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    user.skillsToLearn.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase()))) &&
-    (selectedFilter === '' || user.skillsToTeach.some(skill => skill.category === selectedFilter) || user.skillsToLearn.some(skill => skill.category === selectedFilter))
-  );
+  const filteredUsers = users.filter(user => {
+    const userName = user.name ? user.name.toLowerCase() : '';
+    const skillsToTeach = user.skillsToTeach ? user.skillsToTeach : [];
+    const skillsToLearn = user.skillsToLearn ? user.skillsToLearn : [];
+
+    return (
+      (userName.includes(searchTerm.toLowerCase()) ||
+      skillsToTeach.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      skillsToLearn.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+      (selectedFilter === '' || skillsToTeach.some(skill => skill.category === selectedFilter) || skillsToLearn.some(skill => skill.category === selectedFilter))
+    );
+  });
 
   const handleConnectClick = (user) => {
     setSelectedUser(user);
