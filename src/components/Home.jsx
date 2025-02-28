@@ -134,7 +134,7 @@ const Home = () => {
       console.log("Connected with user:", data);
       // Optionally, update the UI or show a success message
     } catch (err) {
-      console.error("Error connecting with user:", err.message);
+      console.error("Error connecting with user:", err);
       // Optionally, show an error message to the user
     }
   }
