@@ -228,7 +228,7 @@ const Dashboard = () => {
               </h1>
               <p className="text-indigo-100">Here's what's happening with your account today.</p>
             </div>
-            <div className="mt-6 md:mt-0 space-x-4">
+            <div className="mt-6 md:mt-0 space-x-4 space-y-4">
               <button
                 onClick={() => setIsProfileModalOpen(true)}
                 className="bg-white/10 text-white px-6 py-2 rounded-lg font-medium hover:bg-white/20 transition-colors"
