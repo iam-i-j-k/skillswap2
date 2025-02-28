@@ -170,7 +170,8 @@ const Dashboard = () => {
   const handleProfileSave = async (updatedProfile) => {
     try {
       // Update profile in the database
-      await axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/profile`, updatedProfile);
+      const response = await axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/profile`, updatedProfile);
+      console.log('API Response:', response.data);
 
       // Update profile in the state and local storage
       setProfile(updatedProfile);
