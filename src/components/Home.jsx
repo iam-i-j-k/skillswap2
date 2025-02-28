@@ -79,21 +79,26 @@ const Home = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`)
-        if (!response.ok) throw new Error("Failed to fetch users")
-
-        const data = await response.json()
-        setUsers(data)
-        setFilteredUsers(data)
+        const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`, {
+          headers: {
+            'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+          }
+        });
+        if (!response.ok) throw new Error("Failed to fetch users");
+  
+        const data = await response.json();
+        setUsers(data);
+        setFilteredUsers(data);
       } catch (err) {
-        setError(err.message)
+        setError(err.message);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-
-    fetchUsers()
-  }, [])
+    };
+  
+    fetchUsers();
+  }, []);
 
   // Handle search
   useEffect(() => {
