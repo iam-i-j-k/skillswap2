@@ -169,17 +169,25 @@ const Dashboard = () => {
 
   const handleProfileSave = async (updatedProfile) => {
     try {
-      // Update profile in the database
-      const response = await axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/profile`, updatedProfile);
-      console.log('API Response:', response.data);
+      const response = await axios.put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/profile`,
+        updatedProfile,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // Add this if authentication is required
+        }
+      );
+      console.log("API Response:", response.data);
   
-      // Update profile in the state and local storage
-      setProfile(updatedProfile);
-      localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+      setProfile(response.data);
+      localStorage.setItem("userProfile", JSON.stringify(response.data));
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("Error updating profile:", error.response ? error.response.data : error);
     }
   };
+  
 
   const stats = [
     {
