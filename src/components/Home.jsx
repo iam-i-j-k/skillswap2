@@ -126,7 +126,7 @@ const Home = () => {
       if (!response.ok) throw new Error("Failed to connect with user");
 
       const data = await response.json();
-      console.log("Connected with user:", data);
+      console.log("Connected with user: data", data);
       // Optionally, update the UI or show a success message
     } catch (err) {
       console.error("Error connecting with user:", err.message);
