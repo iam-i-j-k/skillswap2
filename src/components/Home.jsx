@@ -7,7 +7,7 @@ const Home = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users`); // Update with your backend URL
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`); // Update with your backend URL
         if (!response.ok) throw new Error("Failed to fetch users");
         
         const data = await response.json();
