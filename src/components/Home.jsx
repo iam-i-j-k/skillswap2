@@ -111,9 +111,27 @@ const Home = () => {
     setFilteredUsers(filtered)
   }, [searchQuery, users])
 
-  const handleConnect = (user) => {
-    // Implement connection logic here
-    console.log("Connecting with user:", user)
+  const handleConnect = async (user) => {
+    try {
+      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+        },
+        body: JSON.stringify({ userId: user._id })
+      });
+
+      if (!response.ok) throw new Error("Failed to connect with user");
+
+      const data = await response.json();
+      console.log("Connected with user:", data);
+      // Optionally, update the UI or show a success message
+    } catch (err) {
+      console.error("Error connecting with user:", err.message);
+      // Optionally, show an error message to the user
+    }
   }
 
   return (
