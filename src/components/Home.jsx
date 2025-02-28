@@ -114,8 +114,6 @@ const Home = () => {
   const handleConnect = async (user) => {
     try {
       const token = localStorage.getItem('token'); // Retrieve the token from localStorage
-      if (!token) throw new Error("No token found");
-  
       const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
         method: 'POST',
         headers: {
@@ -124,17 +122,14 @@ const Home = () => {
         },
         body: JSON.stringify({ userId: user._id })
       });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to connect with user");
-      }
-  
+
+      if (!response.ok) throw new Error("Failed to connect with user");
+
       const data = await response.json();
-      console.log("Connected with user:", data);
+      
       // Optionally, update the UI or show a success message
     } catch (err) {
-      console.error("Error connecting with user:", err);
+      console.error("Error connecting with user:", err.message);
       // Optionally, show an error message to the user
     }
   }
