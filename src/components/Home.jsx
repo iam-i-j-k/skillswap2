@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import Header from "./Header";
+import Footer from "./Footer";
 
 const Home = () => {
   const [users, setUsers] = useState([]);
@@ -22,6 +24,7 @@ const Home = () => {
 
   return (
     <div>
+      <Header />
       <h2>Users List</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <ul>
@@ -29,6 +32,7 @@ const Home = () => {
           <li key={user._id}>{user.name} - {user.email}</li> // Adjust based on your user schema
         ))}
       </ul>
+      <Footer />
     </div>
   );
 };
