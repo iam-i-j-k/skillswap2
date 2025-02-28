@@ -6,11 +6,11 @@ function SkillCard({ user, onConnect }) {
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
       <div className="p-6">
         <div className="flex items-center space-x-4">
-          {/* <img
+          <img
             src={user.avatar}
             alt={user.name}
             className="h-16 w-16 rounded-full object-cover"
-          /> */}
+          />
           <div>
             <h3 className="text-xl font-semibold text-gray-900">{user.name}</h3>
             <div className="flex items-center space-x-2 text-yellow-500">
