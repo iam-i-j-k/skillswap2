@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 import { Link } from "react-router-dom";
-import { Users, Video, MessageSquare, Calendar, X, Plus, Edit2, Save } from "lucide-react";
+import {
+  Users,
+  Video,
+  MessageSquare,
+  Calendar,
+  X,
+  Plus,
+  Edit2,
+  Save,
+} from "lucide-react";
 
 const StatsCard = ({ icon: Icon, title, value, trend }) => {
   return (
@@ -57,7 +66,10 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Edit Profile</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -71,30 +83,47 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
         >
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
               <input
                 type="text"
                 value={editedProfile.username}
-                onChange={(e) => setEditedProfile({ ...editedProfile, username: e.target.value })}
+                onChange={(e) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    username: e.target.value,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
               <textarea
                 value={editedProfile.bio}
-                onChange={(e) => setEditedProfile({ ...editedProfile, bio: e.target.value })}
+                onChange={(e) =>
+                  setEditedProfile({ ...editedProfile, bio: e.target.value })
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Skills
+              </label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {editedProfile.skills.map((skill) => (
-                  <SkillBadge key={skill} skill={skill} onRemove={handleRemoveSkill} />
+                  <SkillBadge
+                    key={skill}
+                    skill={skill}
+                    onRemove={handleRemoveSkill}
+                  />
                 ))}
               </div>
               <div className="flex gap-2">
@@ -114,7 +143,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
                 </button>
               </div>
             </div>
-            
+
             <div className="flex justify-end gap-3 mt-6">
               <button
                 type="button"
@@ -150,8 +179,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Load user data
-    const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
-    const storedProfile = localStorage.getItem("userProfile") ? JSON.parse(localStorage.getItem("userProfile")) : {};
+    const storedUser = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : {};
+    const storedProfile = localStorage.getItem("userProfile")
+      ? JSON.parse(localStorage.getItem("userProfile"))
+      : {};
 
     setUsername(storedUser.username || "");
     setProfile({
@@ -170,25 +203,27 @@ const Dashboard = () => {
   const handleProfileSave = async (updatedProfile) => {
     try {
       const response = await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`, 
-        updatedProfile, 
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`,
+        updatedProfile,
         {
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}` // Ensure token is included
-          }
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is included
+          },
         }
       );
-      
+
       console.log("API Response:", response.data);
-  
+
       setProfile(response.data);
       localStorage.setItem("userProfile", JSON.stringify(response.data));
     } catch (error) {
-      console.error("Error updating profile:", error.response ? error.response.data : error);
+      console.error(
+        "Error updating profile:",
+        error.response ? error.response.data : error
+      );
     }
   };
-  
 
   const stats = [
     {
@@ -227,7 +262,9 @@ const Dashboard = () => {
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 {greeting}, {profile.username || username} 👋
               </h1>
-              <p className="text-indigo-100">Here's what's happening with your account today.</p>
+              <p className="text-indigo-100">
+                Here's what's happening with your account today.
+              </p>
             </div>
             <div className="mt-6 md:mt-0 space-x-4">
               <button
@@ -279,10 +316,12 @@ const Dashboard = () => {
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">Skills</h3>
               <div className="flex flex-wrap gap-2">
-                {profile.skills.length > 0 ? (
-                  profile.skills.map((skill) => <SkillBadge key={skill} skill={skill} />)
+                {profile && profile.skills ? (
+                  profile.skills.map((skill) => (
+                    <span key={skill}>{skill}</span>
+                  ))
                 ) : (
-                  <p className="text-gray-400">No skills added yet</p>
+                  <p>Loading...</p>
                 )}
               </div>
             </div>
