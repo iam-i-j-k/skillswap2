@@ -179,10 +179,10 @@ const Dashboard = () => {
         }
       );
       
-      console.log("API Response:", response.data);
+      console.log("API Response:", response.data.user);
   
       setProfile(response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("user", JSON.stringify(response.data.user));
     } catch (error) {
       console.error("Error updating profile:", error.response ? error.response.data : error);
     }
