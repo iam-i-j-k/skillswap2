@@ -15,7 +15,7 @@ const Home = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users`); // Adjust the API endpoint as needed
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`); // Adjust the API endpoint as needed
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
