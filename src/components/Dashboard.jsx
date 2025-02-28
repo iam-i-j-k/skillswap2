@@ -170,7 +170,7 @@ const Dashboard = () => {
   const handleProfileSave = async (updatedProfile) => {
     try {
       const response = await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/profile`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`,
         updatedProfile,
         {
           headers: {
