@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import SkillCard from "./SkillCard";
-import ChatModal from "./ChatModal";
-import { Header } from "./Header";
-import Footer from "./Footer";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import SkillCard from './SkillCard';
+import ChatModal from './ChatModal';
+import { Header } from './Header';
+import Footer from './Footer';
+import axios from 'axios';
 
 const Home = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [users, setUsers] = useState([]);
@@ -14,33 +14,32 @@ const Home = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`
+        );
+        setUsers(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setError('Failed to fetch users. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`
-      );
-      setUsers(response.data);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getFilteredUsers = () => {
+    if (!Array.isArray(users)) return [];
     return users.filter((user) => {
-      const userName = user.username?.toLowerCase() || "";
-      const skills = Array.isArray(user.skills) ? user.skills : [];
+      const userName = user?.username?.toLowerCase() || '';
+      const skills = Array.isArray(user?.skills) ? user.skills : [];
 
       return (
         (userName.includes(searchTerm.toLowerCase()) ||
-          skills.some((skill) =>
-            skill.toLowerCase().includes(searchTerm.toLowerCase())
-          ))
+          skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase())))
       );
     });
   };
@@ -53,13 +52,15 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-4 md:mb-0">
             Find Your Perfect Skill Match
           </h2>
-          <input
-            type="text"
-            placeholder="Search skills..."
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="flex space-x-4">
+            <input
+              type="text"
+              placeholder="Search skills..."
+              className="pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
         {loading ? (
@@ -69,7 +70,7 @@ const Home = () => {
         ) : getFilteredUsers().length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {getFilteredUsers().map((user) => (
-              <SkillCard key={user._id} user={user} onConnect={setSelectedUser} />
+              <SkillCard key={user._id} user={user} onConnect={() => setSelectedUser(user)} />
             ))}
           </div>
         ) : (
@@ -80,7 +81,6 @@ const Home = () => {
       {isChatOpen && selectedUser && (
         <ChatModal user={selectedUser} onClose={() => setIsChatOpen(false)} />
       )}
-
       <Footer />
     </div>
   );
