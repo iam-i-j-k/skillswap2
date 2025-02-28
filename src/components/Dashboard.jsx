@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import axios from 'axios';
 import { Link } from "react-router-dom";
-
 import { Users, Video, MessageSquare, Calendar, X, Plus, Edit2, Save } from "lucide-react";
 
 const StatsCard = ({ icon: Icon, title, value, trend }) => {
@@ -74,8 +74,8 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
               <input
                 type="text"
-                value={editedProfile.fullName}
-                onChange={(e) => setEditedProfile({ ...editedProfile, fullName: e.target.value })}
+                value={editedProfile.username}
+                onChange={(e) => setEditedProfile({ ...editedProfile, username: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
@@ -143,7 +143,7 @@ const Dashboard = () => {
   const [greeting, setGreeting] = useState("");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profile, setProfile] = useState({
-    fullName: "",
+    username: "",
     bio: "",
     skills: [],
   });
@@ -155,7 +155,7 @@ const Dashboard = () => {
 
     setUsername(storedUser.username || "");
     setProfile({
-      fullName: storedProfile.fullName || "",
+      username: storedProfile.username || "",
       bio: storedUser.bio || storedProfile.bio || "",
       skills: storedUser.skills || storedProfile.skills || [],
     });
@@ -167,9 +167,17 @@ const Dashboard = () => {
     else setGreeting("Good evening");
   }, []);
 
-  const handleProfileSave = (updatedProfile) => {
-    setProfile(updatedProfile);
-    localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+  const handleProfileSave = async (updatedProfile) => {
+    try {
+      // Update profile in the database
+      await axios.put('/api/profile', updatedProfile);
+
+      // Update profile in the state and local storage
+      setProfile(updatedProfile);
+      localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
   const stats = [
@@ -207,7 +215,7 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                {greeting}, {profile.fullName || username} 👋
+                {greeting}, {profile.username || username} 👋
               </h1>
               <p className="text-indigo-100">Here's what's happening with your account today.</p>
             </div>
