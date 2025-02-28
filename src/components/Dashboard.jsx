@@ -182,7 +182,7 @@ const Dashboard = () => {
       console.log("API Response:", response.data);
   
       setProfile(response.data);
-      localStorage.getItem("user") ? JSON.parse(localStorage.setItem("user", response.data)) : {};
+      localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
       console.error("Error updating profile:", error.response ? error.response.data : error);
     }
