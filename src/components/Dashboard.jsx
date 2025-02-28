@@ -151,13 +151,12 @@ const Dashboard = () => {
   useEffect(() => {
     // Load user data
     const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
-    const storedProfile = localStorage.getItem("userProfile") ? JSON.parse(localStorage.getItem("userProfile")) : {};
 
     setUsername(storedUser.username || "");
     setProfile({
-      username: storedProfile.username || "",
-      bio: storedUser.bio || storedProfile.bio || "",
-      skills: storedUser.skills || storedProfile.skills || [],
+      username: storedUser.username || "",
+      bio: storedUser.bio || "",
+      skills: storedUser.skills || [],
     });
 
     // Set greeting based on time of day
@@ -183,7 +182,7 @@ const Dashboard = () => {
       console.log("API Response:", response.data);
   
       setProfile(response.data);
-      localStorage.setItem("userProfile", JSON.stringify(response.data));
+      localStorage.setItem("user", response.data);
     } catch (error) {
       console.error("Error updating profile:", error.response ? error.response.data : error);
     }
