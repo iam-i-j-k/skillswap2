@@ -1,135 +1,302 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import axios from "axios"
+import { X, Check, ChevronDown, Loader2 } from "lucide-react"
+
+const PREDEFINED_SKILLS = [
+  "JavaScript",
+  "Python",
+  "React",
+  "Node.js",
+  "TypeScript",
+  "Java",
+  "C++",
+  "AWS",
+  "Docker",
+  "Kubernetes",
+  "Machine Learning",
+  "Data Science",
+  "UI/UX Design",
+  "Product Management",
+  "DevOps",
+  "Cloud Computing",
+]
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    skills: [],
+    bio: "",
+  })
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [showSkillsDropdown, setShowSkillsDropdown] = useState(false)
+  const [customSkill, setCustomSkill] = useState("")
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const toggleSkill = (skill) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.includes(skill) ? prev.skills.filter((s) => s !== skill) : [...prev.skills, skill],
+    }))
+  }
+
+  const addCustomSkill = () => {
+    if (customSkill.trim() && !formData.skills.includes(customSkill.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, customSkill.trim()],
+      }))
+      setCustomSkill("")
+    }
+  }
+
+  const removeSkill = (skillToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
+    }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(''); // Clear previous errors
-    
+    e.preventDefault()
+    setError("")
+
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      setError("Passwords do not match")
+      return
     }
-  
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long")
+      return
+    }
+
     try {
-      console.log('Sending registration request...');
-      const response = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`,
-        {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password
-        }
-      );
-  
-      console.log('Registration successful:', response.data);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/home');
+      setIsLoading(true)
+      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`, {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        skills: formData.skills,
+        bio: formData.bio,
+      })
+
+      localStorage.setItem("token", response.data.token)
+      localStorage.setItem("user", JSON.stringify(response.data.user))
+      navigate("/dashboard")
     } catch (error) {
-      console.error('Registration error:', error.response?.data || error.message);
-      setError(error.response?.data?.error || 'Registration failed. Please try again.');
+      setError(error.response?.data?.error || "Registration failed. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded shadow">
-        <h2 className="text-center text-3xl font-bold">Create Account</h2>
-        {error && <div className="text-red-500 text-center">{error}</div>}
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              value={formData.username}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">Create Account</h2>
+          <p className="mt-2 text-gray-600">Join our community and connect with others</p>
+        </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-purple-100">
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+              <X className="w-4 h-4" />
+              {error}
+            </div>
+          )}
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-6">
+              {/* Username Input */}
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="JohnDoe"
+                />
+              </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
+              {/* Email Input */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="you@example.com"
+                />
+              </div>
 
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
-          >
-            Sign Up
-          </button>
-        </form>
+              {/* Password Input */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="••••••••"
+                />
+              </div>
 
-        <div className="text-center mt-4">
-          Already have an account?{' '}
-          <Link to="/login" className="text-purple-600 hover:text-purple-500">
+              {/* Confirm Password Input */}
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {/* Skills Selection */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+
+                {/* Selected Skills */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {formData.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                    >
+                      {skill}
+                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Skills Dropdown Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setShowSkillsDropdown(!showSkillsDropdown)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors flex items-center justify-between"
+                >
+                  <span className="text-gray-500">Select or add skills...</span>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+
+                {/* Skills Dropdown */}
+                {showSkillsDropdown && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                    <div className="p-2">
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={customSkill}
+                          onChange={(e) => setCustomSkill(e.target.value)}
+                          placeholder="Add custom skill..."
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded-md text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomSkill}
+                          className="px-2 py-1 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700 transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {PREDEFINED_SKILLS.map((skill) => (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => toggleSkill(skill)}
+                            className="w-full text-left px-3 py-2 hover:bg-purple-50 rounded-md text-sm flex items-center justify-between"
+                          >
+                            {skill}
+                            {formData.skills.includes(skill) && <Check className="w-4 h-4 text-purple-600" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bio Input */}
+              <div>
+                <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                  Bio
+                </label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  required
+                  value={formData.bio}
+                  onChange={handleChange}
+                  rows={3}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="Tell us about yourself..."
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
+        </div>
+
+        <div className="text-center text-sm">
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-purple-600 hover:text-purple-500 transition-colors">
             Sign in
           </Link>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SignUp;
+export default SignUp
+
