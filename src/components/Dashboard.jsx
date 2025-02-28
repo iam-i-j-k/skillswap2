@@ -156,9 +156,8 @@ const Dashboard = () => {
     const storedBio = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).bio : "";
     if (storedBio) setProfile({ ...profile, bio: storedBio });
 
-
-    const storedSkills = localStorage.setItem("user") ? JSON.parse(localStorage.getItem("user")).skills : [];
-    if (storedSkills) setProfile({...profile, skills: storedSkills });
+    const storedSkills = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).skills : [];
+    if (storedSkills) setProfile({ ...profile, skills: storedSkills });
 
     // Load profile data
     const storedProfile = localStorage.getItem("userProfile");
