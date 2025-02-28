@@ -114,7 +114,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
                 </button>
               </div>
             </div>
-
+            
             <div className="flex justify-end gap-3 mt-6">
               <button
                 type="button"
@@ -152,6 +152,13 @@ const Dashboard = () => {
     // Load user data
     const storedUsername = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).username : "";
     if (storedUsername) setUsername(storedUsername);
+
+    const storedBio = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).bio : "";
+    if (storedBio) setProfile({ ...profile, bio: storedBio });
+
+
+    const storedSkills = localStorage.setItem("user") ? JSON.parse(localStorage.getItem("user")).skills : [];
+    if (storedSkills) setProfile({...profile, skills: storedSkills });
 
     // Load profile data
     const storedProfile = localStorage.getItem("userProfile");
