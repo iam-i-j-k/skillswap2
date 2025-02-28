@@ -170,15 +170,16 @@ const Dashboard = () => {
   const handleProfileSave = async (updatedProfile) => {
     try {
       const response = await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`,
-        updatedProfile,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`, 
+        updatedProfile, 
         {
-          headers: {
+          headers: { 
             "Content-Type": "application/json",
-          },
-          withCredentials: true, // Add this if authentication is required
+            "Authorization": `Bearer ${localStorage.getItem("token")}` // Ensure token is included
+          }
         }
       );
+      
       console.log("API Response:", response.data);
   
       setProfile(response.data);
