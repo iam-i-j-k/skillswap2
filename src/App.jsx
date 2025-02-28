@@ -31,7 +31,11 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/login" />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/home" element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } />
             <Route path="/video-call/:userId" element={<VideoCallPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
