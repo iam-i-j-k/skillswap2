@@ -183,6 +183,7 @@ const Dashboard = () => {
   
       setProfile(response.data);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      window.location.reload();
     } catch (error) {
       console.error("Error updating profile:", error.response ? error.response.data : error);
     }
