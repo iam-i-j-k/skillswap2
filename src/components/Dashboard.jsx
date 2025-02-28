@@ -150,20 +150,15 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Load user data
-    const storedUsername = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).username : "";
-    if (storedUsername) setUsername(storedUsername);
+    const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
+    const storedProfile = localStorage.getItem("userProfile") ? JSON.parse(localStorage.getItem("userProfile")) : {};
 
-    const storedBio = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).bio : "";
-    if (storedBio) setProfile({ ...profile, bio: storedBio });
-
-    const storedSkills = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).skills : [];
-    if (storedSkills) setProfile({ ...profile, skills: storedSkills });
-
-    // Load profile data
-    const storedProfile = localStorage.getItem("userProfile");
-    if (storedProfile) {
-      setProfile(JSON.parse(storedProfile));
-    }
+    setUsername(storedUser.username || "");
+    setProfile({
+      fullName: storedProfile.fullName || "",
+      bio: storedUser.bio || storedProfile.bio || "",
+      skills: storedUser.skills || storedProfile.skills || [],
+    });
 
     // Set greeting based on time of day
     const hour = new Date().getHours();
