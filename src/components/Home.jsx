@@ -26,15 +26,13 @@ const Home = () => {
   }, []);
 
   const filteredUsers = users.filter(user => {
-    const userName = user.name ? user.name.toLowerCase() : '';
-    const skillsToTeach = user.skillsToTeach ? user.skillsToTeach : [];
-    const skillsToLearn = user.skillsToLearn ? user.skillsToLearn : [];
+    const userName = user.username ? user.username.toLowerCase() : '';
+    const skills = Array.isArray(user.skills) ? user.skills : [];
 
     return (
       (userName.includes(searchTerm.toLowerCase()) ||
-      skillsToTeach.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      skillsToLearn.some(skill => skill.name.toLowerCase().includes(searchTerm.toLowerCase()))) &&
-      (selectedFilter === '' || skillsToTeach.some(skill => skill.category === selectedFilter) || skillsToLearn.some(skill => skill.category === selectedFilter))
+      skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+      (selectedFilter === '' || skills.some(skill => skill.toLowerCase() === selectedFilter.toLowerCase()))
     );
   });
 
@@ -64,9 +62,13 @@ const Home = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredUsers.map(user => (
-            <SkillCard key={user.id} user={user} onConnect={handleConnectClick} />
-          ))}
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map(user => (
+              <SkillCard key={user._id} user={user} onConnect={handleConnectClick} />
+            ))
+          ) : (
+            <p>No users found</p>
+          )}
         </div>
       </div>
       {isChatOpen && selectedUser && (
