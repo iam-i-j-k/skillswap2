@@ -8,7 +8,7 @@ const UserCard = ({ user, onConnect }) => (
     <div className="flex items-start justify-between">
       <div className="flex gap-4">
         {/* User Avatar */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-indigo-500 flex items-center justify-center text-white text-lg font-semibold">
+        <div className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-full bg-gradient-to-br from-pink-500 to-indigo-500 flex items-center justify-center text-white text-lg font-semibold shrink-0">
           {user.username?.charAt(0) || user.email?.charAt(0)}
         </div>
 
