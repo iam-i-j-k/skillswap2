@@ -1,45 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
-
-const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL, {
-  transports: ["websocket"],
-  autoConnect: false
-});
+import React, { useState } from "react";
 
 function Chat({ userId, receiverId }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Connect socket
-    socket.connect();
-
-    // Register user on WebSocket connection
-    socket.emit("register", userId);
-
-    // Listen for incoming messages
-    socket.on("message", (msg) => {
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    // Handle errors
-    socket.on("messageError", (error) => {
-      setError(error.message);
-    });
-
-    return () => {
-      socket.off("message");
-      socket.off("messageError");
-      socket.disconnect();
-    };
-  }, [userId]);
-
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
       const newMessage = { senderId: userId, receiverId, text: message };
-      socket.emit("sendMessage", newMessage);
       setMessages((prev) => [...prev, newMessage]); // Update local state
       setMessage("");
     }
