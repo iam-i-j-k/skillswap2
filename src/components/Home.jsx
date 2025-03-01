@@ -9,16 +9,13 @@ const UserCard = ({ user, onConnect }) => (
       <div className="flex gap-4">
         {/* User Avatar */}
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-lg font-semibold">
-          {user.fullname?.charAt(0) || user.email?.charAt(0)}
+          {user.username?.charAt(0) || user.email?.charAt(0)}
         </div>
 
         {/* User Info */}
         <div>
           <h3 className="font-semibold text-gray-900">{user.username}</h3>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-            <MailIcon className="w-4 h-4" />
-            <span>{user.email}</span>
-          </div>
+
 
           {/* Skills */}
           {user.skills && user.skills.length > 0 && (
