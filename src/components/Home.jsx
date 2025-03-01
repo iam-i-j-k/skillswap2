@@ -6,7 +6,7 @@ import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
 
 
-const notify = () => toast('Here is your toast.');
+const notify = () => toast.success('Request Sent!');
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
