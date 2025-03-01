@@ -5,6 +5,7 @@ import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, Ma
 import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
 import { io } from "socket.io-client";
+import Notification from './Notification';
 
 const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
 
@@ -81,6 +82,7 @@ const Home = () => {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -110,6 +112,7 @@ const Home = () => {
     socket.on('connectionRequest', (data) => {
       // Display notification to the user
       toast.success(`New connection request from ${data.requester}`);
+      setNotifications((prev) => [...prev, data]);
     });
 
     return () => {
@@ -148,9 +151,30 @@ const Home = () => {
     }
   };
 
+  const handleAccept = (connectionId) => {
+    setNotifications((prev) => prev.filter((n) => n.connection._id !== connectionId));
+  };
+
+  const handleReject = (connectionId) => {
+    setNotifications((prev) => prev.filter((n) => n.connection._id !== connectionId));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <Toaster />
+
+      {/* Notifications */}
+      <div className="fixed top-4 right-4 z-50">
+        {notifications.map((notification) => (
+          <Notification
+            key={notification.connection._id}
+            notification={notification}
+            onAccept={handleAccept}
+            onReject={handleReject}
+          />
+        ))}
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
