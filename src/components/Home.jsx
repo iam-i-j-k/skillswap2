@@ -12,68 +12,6 @@ const notify = () => toast.success('Request Sent!');
 const showError = (err) => toast.error(err.response?.data?.error || err.message);
 
 
-const Notification = ({ notification, onAccept, onReject }) => {
-  const handleAccept = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections/${notification.connection._id}/accept`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success('Connection accepted');
-      onAccept(notification.connection._id);
-    } catch (error) {
-      toast.error('Error accepting connection');
-    }
-  };
-
-  const handleReject = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections/${notification.connection._id}/reject`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success('Connection rejected');
-      onReject(notification.connection._id);
-    } catch (error) {
-      toast.error('Error rejecting connection');
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-      <p className="text-gray-900">
-        New connection request from {notification.requester}
-      </p>
-      <div className="flex gap-2 mt-2">
-        <button
-          onClick={handleAccept}
-          className="px-4 py-2 bg-green-500 text-white rounded-lg"
-        >
-          Accept
-        </button>
-        <button
-          onClick={handleReject}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg"
-        >
-          Reject
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
     <div className="flex items-start justify-between">
@@ -143,7 +81,6 @@ const Home = () => {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -173,7 +110,6 @@ const Home = () => {
     socket.on('connectionRequest', (data) => {
       // Display notification to the user
       toast.success(`New connection request from ${data.requester}`);
-      setNotifications((prev) => [...prev, data]);
     });
 
     return () => {
@@ -212,30 +148,9 @@ const Home = () => {
     }
   };
 
-  const handleAccept = (connectionId) => {
-    setNotifications((prev) => prev.filter((n) => n.connection._id !== connectionId));
-  };
-
-  const handleReject = (connectionId) => {
-    setNotifications((prev) => prev.filter((n) => n.connection._id !== connectionId));
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <Toaster />
-
-      {/* Notifications */}
-      <div className="fixed top-4 right-4 z-50 w-10 h-10">
-        {notifications.map((notification) => (
-          <Notification
-            key={notification.connection._id}
-            notification={notification}
-            onAccept={handleAccept}
-            onReject={handleReject}
-          />
-        ))}
-      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
