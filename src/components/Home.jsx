@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Header } from "./Header";
-import Footer from "./Footer";
-import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react";
+import React, { useEffect, useState } from "react"
+import { Header } from "./Header"
+import Footer from "./Footer"
+import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
 import axios from "axios";
-import { io } from "socket.io-client";
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -65,15 +64,16 @@ const UserCard = ({ user, onConnect }) => (
     {/* Bio */}
     {user.bio && <p className="mt-4 text-sm text-gray-600 line-clamp-2">{user.bio}</p>}
   </div>
-);
+)
 
 const Home = () => {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState([]);
+  const [users, setUsers] = useState([])
+  const [filteredUsers, setFilteredUsers] = useState([])
+  const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [connectingUserId, setConnectingUserId] = useState(null);
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -85,7 +85,7 @@ const Home = () => {
           }
         });
         if (!response.ok) throw new Error("Failed to fetch users");
-
+  
         const data = await response.json();
         setUsers(data);
         setFilteredUsers(data);
@@ -95,35 +95,25 @@ const Home = () => {
         setIsLoading(false);
       }
     };
-
+  
     fetchUsers();
   }, []);
 
+  // Handle search
   useEffect(() => {
     const filtered = users.filter(
       (user) =>
         user.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.skills?.some((skill) => skill.toLowerCase().includes(searchQuery.toLowerCase())),
-    );
-    setFilteredUsers(filtered);
-  }, [searchQuery, users]);
-
-  useEffect(() => {
-    const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
-
-    socket.on('connectionRequest', (data) => {
-      setNotifications((prevNotifications) => [...prevNotifications, data]);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+    )
+    setFilteredUsers(filtered)
+  }, [searchQuery, users])
 
   const handleConnect = async (user) => {
     try {
-      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+      setConnectingUserId(user._id);
+      const token = localStorage.getItem('token');
 
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections`,
@@ -131,16 +121,16 @@ const Home = () => {
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      console.log("Connection successful:", response.data);
-      // Optionally, update the UI or show a success message
+      toast.success(`Connection request sent to ${user.username || "User"}`);
     } catch (err) {
-      console.error("Error connecting with user:", err.response?.data?.error || err.message);
-      // Optionally, show an error message to the user
+      toast.error(`Error connecting: ${err.response?.data?.error || err.message}`);
+    } finally {
+      setConnectingUserId(null);
     }
   };
 
@@ -200,18 +190,9 @@ const Home = () => {
       </main>
 
       <Footer />
-
-      {/* Notifications */}
-      <div className="fixed bottom-4 right-4">
-        {notifications.map((notification, index) => (
-          <div key={index} className="bg-white p-4 rounded-lg shadow-lg mb-2">
-            <p>New connection request from user ID: {notification.requester}</p>
-          </div>
-        ))}
-      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
 
