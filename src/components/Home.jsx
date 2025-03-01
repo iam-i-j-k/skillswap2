@@ -4,7 +4,9 @@ import Footer from "./Footer"
 import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
 import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
+import { io } from "socket.io-client";
 
+const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
 
 const notify = () => toast.success('Request Sent!');
 const showError = (err) => toast.error(err.response?.data?.error || err.message);
@@ -102,6 +104,17 @@ const Home = () => {
     };
   
     fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    socket.on('connectionRequest', (data) => {
+      // Display notification to the user
+      toast.success(`New connection request from ${data.requester}`);
+    });
+
+    return () => {
+      socket.off('connectionRequest');
+    };
   }, []);
 
   // Handle search
