@@ -28,18 +28,62 @@ const SkillBadge = ({ skill, onRemove }) => (
   </span>
 );
 
+
+
+// Predefined Skills List
+const skillOptions = [
+  // Programming & Development
+  "JavaScript", "TypeScript", "React.js", "Next.js", "Vue.js", "Angular", "Node.js",
+  "Express.js", "Python", "Django", "Flask", "Java", "Spring Boot", "Kotlin", "Swift",
+  "C", "C++", "C#", ".NET", "PHP", "Laravel", "Ruby", "Ruby on Rails", "Go (Golang)",
+  "Rust", "GraphQL", "REST APIs", "WebSockets", "HTML", "CSS", "Tailwind CSS",
+  "Bootstrap", "Sass", "Material UI",
+  
+  // DevOps & Cloud
+  "Docker", "Kubernetes", "CI/CD Pipelines", "GitHub Actions", "GitLab CI/CD",
+  "Jenkins", "AWS", "AWS Lambda", "Azure", "Google Cloud Platform (GCP)",
+  "Firebase", "Terraform", "Ansible", "Linux Administration", "Bash Scripting",
+  "Nginx", "Apache",
+  
+  // Data Science & AI
+  "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-Learn",
+  "NumPy", "Pandas", "Matplotlib", "Seaborn", "OpenCV", "Natural Language Processing (NLP)",
+  "Computer Vision", "Big Data", "Apache Spark", "Hadoop", "SQL", "NoSQL",
+  "MongoDB", "PostgreSQL", "MySQL", "Redis",
+  
+  // UI/UX & Design
+  "Figma", "Adobe XD", "Sketch", "Photoshop", "Illustrator", "UI/UX Principles",
+  "Wireframing", "Prototyping", "Responsive Design", "Accessibility (WCAG)",
+  
+  // Mobile Development
+  "Android Development", "iOS Development", "Flutter", "React Native",
+  "SwiftUI", "Jetpack Compose",
+  
+  // Cybersecurity
+  "Ethical Hacking", "Penetration Testing", "Network Security", "Cryptography",
+  "OWASP Top 10", "Security Best Practices", "ISO 27001",
+  
+  // Mathematics & Algorithms
+  "Data Structures & Algorithms", "Competitive Programming", "Discrete Mathematics",
+  "Linear Algebra", "Probability & Statistics",
+  
+  // Business & Soft Skills
+  "Agile Methodology", "Scrum", "Kanban", "Project Management",
+  "Communication Skills", "Leadership", "Team Collaboration", "Time Management",
+  "Problem-Solving", "Critical Thinking", "Creativity", "Adaptability",
+  ]
+
 const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
   const [editedProfile, setEditedProfile] = useState(profile);
-  const [newSkill, setNewSkill] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
 
-  const handleAddSkill = (e) => {
-    e.preventDefault();
-    if (newSkill.trim() && !editedProfile.skills.includes(newSkill.trim())) {
+  const handleAddSkill = () => {
+    if (selectedSkill && !editedProfile.skills.includes(selectedSkill)) {
       setEditedProfile({
         ...editedProfile,
-        skills: [...editedProfile.skills, newSkill.trim()],
+        skills: [...editedProfile.skills, selectedSkill],
       });
-      setNewSkill("");
+      setSelectedSkill(""); // Reset selection
     }
   };
 
@@ -98,13 +142,18 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
                 ))}
               </div>
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  placeholder="Add a skill"
+                <select
+                  value={selectedSkill}
+                  onChange={(e) => setSelectedSkill(e.target.value)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
+                >
+                  <option value="">Select a skill</option>
+                  {skillOptions.map((skill) => (
+                    <option key={skill} value={skill}>
+                      {skill}
+                    </option>
+                  ))}
+                </select>
                 <button
                   onClick={handleAddSkill}
                   type="button"
@@ -137,6 +186,11 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
     </div>
   );
 };
+
+// SkillBadge Component
+
+
+
 
 const Dashboard = () => {
   const [username, setUsername] = useState("");
