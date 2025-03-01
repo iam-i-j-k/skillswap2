@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Header } from "./Header"
 import Footer from "./Footer"
-import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus } from "lucide-react"
+import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2 } from "lucide-react"
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -16,8 +16,8 @@ const UserCard = ({ user, onConnect }) => (
         <div>
           <h3 className="font-semibold text-gray-900">{user.fullname}</h3>
           <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-            <Mail className="w-4 h-4" />
-            <span>{user.email}</span>
+            <User2 className="w-4 h-4" />
+            <span>{user.fullname}</span>
           </div>
 
           {/* Skills */}
