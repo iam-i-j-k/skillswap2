@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Header } from "./Header"
 import Footer from "./Footer"
 import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
+import axios from "axios";
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -110,25 +111,25 @@ const Home = () => {
   const handleConnect = async (user) => {
     try {
       const token = localStorage.getItem('token'); // Retrieve the token from localStorage
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Include the token in the Authorization header
-        },
-        body: JSON.stringify({ userId: user._id })
-      });
   
-      if (!response.ok) throw new Error("Failed to connect with user");
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`,
+        { userId: user._id },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      );
   
-      const data = await response.json();
-      
+      console.log("Connection successful:", response.data);
       // Optionally, update the UI or show a success message
     } catch (err) {
-      console.error("Error connecting with user:", err.message);
+      console.error("Error connecting with user:", err.response?.data?.error || err.message);
       // Optionally, show an error message to the user
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
