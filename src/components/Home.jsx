@@ -14,10 +14,10 @@ const UserCard = ({ user, onConnect }) => (
 
         {/* User Info */}
         <div>
-          <h3 className="font-semibold text-gray-900">{user.fullname}</h3>
+          <h3 className="font-semibold text-gray-900">{user.username}</h3>
           <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
             <User2 className="w-4 h-4" />
-            <span>{user.username}</span>
+            <span>{user.email}</span>
           </div>
 
           {/* Skills */}
