@@ -17,7 +17,7 @@ const UserCard = ({ user, onConnect }) => (
           <h3 className="font-semibold text-gray-900">{user.fullname}</h3>
           <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
             <User2 className="w-4 h-4" />
-            <span>{user.fullname}</span>
+            <span>{user.username}</span>
           </div>
 
           {/* Skills */}
