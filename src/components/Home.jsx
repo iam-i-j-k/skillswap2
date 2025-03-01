@@ -165,7 +165,7 @@ const Home = () => {
       <Toaster />
 
       {/* Notifications */}
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-4 right-4 z-50 w-10 h-10">
         {notifications.map((notification) => (
           <Notification
             key={notification.connection._id}
