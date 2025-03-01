@@ -3,6 +3,10 @@ import { Header } from "./Header"
 import Footer from "./Footer"
 import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
+
+
+const notify = () => toast('Here is your toast.');
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -44,6 +48,7 @@ const UserCard = ({ user, onConnect }) => (
         >
           <UserPlus className="w-5 h-5" />
         </button>
+        <Toaster />
         <button
           onClick={() => (window.location.href = `/video-call/${user._id}`)}
           className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
@@ -122,7 +127,7 @@ const Home = () => {
           },
         }
       );
-  
+      notify;
       console.log("Connection successful:", response.data);
       // Optionally, update the UI or show a success message
     } catch (err) {
