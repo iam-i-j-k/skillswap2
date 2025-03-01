@@ -130,12 +130,8 @@ const Home = () => {
         }
       );
       notify();
-      console.log("Connection successful:", response.data);
-      // Optionally, update the UI or show a success message
     } catch (err) {
       showError(err);
-      console.error("Error connecting with user:", err.response?.data?.error || err.message);
-      // Optionally, show an error message to the user
     }
   };
 
