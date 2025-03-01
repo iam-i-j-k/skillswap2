@@ -3,9 +3,6 @@ import { Header } from "./Header"
 import Footer from "./Footer"
 import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
 import axios from "axios";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -75,8 +72,6 @@ const Home = () => {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [connectingUserId, setConnectingUserId] = useState(null);
-
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -115,25 +110,24 @@ const Home = () => {
 
   const handleConnect = async (user) => {
     try {
-      setConnectingUserId(user._id);
-      const token = localStorage.getItem('token');
-
+      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+  
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections`,
         { userId: user._id },
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
           },
         }
       );
-
-      toast.success(`Connection request sent to ${user.username || "User"}`, {position: "top-right"});
+  
+      console.log("Connection successful:", response.data);
+      // Optionally, update the UI or show a success message
     } catch (err) {
-      toast.error(`Error connecting: ${err.response?.data?.error || err.message}`);
-    } finally {
-      setConnectingUserId(null);
+      console.error("Error connecting with user:", err.response?.data?.error || err.message);
+      // Optionally, show an error message to the user
     }
   };
 
