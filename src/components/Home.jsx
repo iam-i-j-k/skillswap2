@@ -118,9 +118,9 @@ const Home = () => {
         },
         body: JSON.stringify({ userId: user._id })
       });
-
+  
       if (!response.ok) throw new Error("Failed to connect with user");
-
+  
       const data = await response.json();
       
       // Optionally, update the UI or show a success message
