@@ -7,6 +7,8 @@ import toast, { Toaster } from 'react-hot-toast';
 
 
 const notify = () => toast.success('Request Sent!');
+const showError = () => toast.error(err.response?.data?.error || err.message);
+
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -131,7 +133,7 @@ const Home = () => {
       console.log("Connection successful:", response.data);
       // Optionally, update the UI or show a success message
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message);
+      showError();
       console.error("Error connecting with user:", err.response?.data?.error || err.message);
       // Optionally, show an error message to the user
     }
