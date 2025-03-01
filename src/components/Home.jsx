@@ -6,6 +6,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+toast.configure();
+
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
     <div className="flex items-start justify-between">
@@ -128,7 +130,7 @@ const Home = () => {
         }
       );
 
-      toast.success(`Connection request sent to ${user.username || "User"}`);
+      toast.success(`Connection request sent to ${user.username || "User"}`, {position: "top-right"});
     } catch (err) {
       toast.error(`Error connecting: ${err.response?.data?.error || err.message}`);
     } finally {
