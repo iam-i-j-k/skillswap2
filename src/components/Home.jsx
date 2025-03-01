@@ -131,6 +131,7 @@ const Home = () => {
       console.log("Connection successful:", response.data);
       // Optionally, update the UI or show a success message
     } catch (err) {
+      toast.error(err.response?.data?.error || err.message);
       console.error("Error connecting with user:", err.response?.data?.error || err.message);
       // Optionally, show an error message to the user
     }
