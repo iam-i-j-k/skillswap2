@@ -1,35 +1,31 @@
 import React, { useEffect, useState } from "react"
 import { Header } from "./Header"
 import Footer from "./Footer"
-import { Users, Video, MessageSquare, Loader2, Search, UserPlus } from "lucide-react"
+import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
     <div className="flex items-start justify-between">
       <div className="flex gap-4">
-        {/* Updated User Avatar with min dimensions */}
-        <div className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-full bg-gradient-to-br from-pink-500 to-indigo-500 flex items-center justify-center text-white text-lg font-semibold shrink-0">
+        {/* User Avatar */}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-indigo-500 flex items-center justify-center text-white text-lg font-semibold">
           {user.username?.charAt(0) || user.email?.charAt(0)}
         </div>
 
-        {/* User Info - Added flex-1 to allow proper spacing */}
-        <div className="flex-1 min-w-0">
-          {" "}
-          {/* Added min-w-0 to prevent text overflow */}
-          <h3 className="font-semibold text-gray-900 truncate">{user.username}</h3>
+        {/* User Info */}
+        <div>
+          <h3 className="font-semibold text-gray-900">{user.username}</h3>
+
           {/* Skills */}
           {user.skills && user.skills.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
               {user.skills.slice(0, 3).map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-medium whitespace-nowrap"
-                >
+                <span key={index} className="px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-medium">
                   {skill}
                 </span>
               ))}
               {user.skills.length > 3 && (
-                <span className="px-2 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium whitespace-nowrap">
+                <span className="px-2 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
                   +{user.skills.length - 3} more
                 </span>
               )}
@@ -38,34 +34,34 @@ const UserCard = ({ user, onConnect }) => (
         </div>
       </div>
 
-      {/* Action Buttons - Added responsive spacing */}
-      <div className="flex gap-1 sm:gap-2 ml-2 shrink-0">
+      {/* Action Buttons */}
+      <div className="flex gap-2">
         <button
           onClick={() => onConnect(user)}
-          className="p-1.5 sm:p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
           title="Connect"
         >
-          <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+          <UserPlus className="w-5 h-5" />
         </button>
         <button
           onClick={() => (window.location.href = `/video-call/${user._id}`)}
-          className="p-1.5 sm:p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
           title="Start Video Call"
         >
-          <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Video className="w-5 h-5" />
         </button>
         <button
           onClick={() => (window.location.href = `/chat/${user._id}`)}
-          className="p-1.5 sm:p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
           title="Send Message"
         >
-          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+          <MessageSquare className="w-5 h-5" />
         </button>
       </div>
     </div>
 
     {/* Bio */}
-    {user.bio && <p className="mt-4 text-sm text-gray-600 line-clamp-2 break-words">{user.bio}</p>}
+    {user.bio && <p className="mt-4 text-sm text-gray-600 line-clamp-2">{user.bio}</p>}
   </div>
 )
 
@@ -79,21 +75,26 @@ const Home = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`)
-        if (!response.ok) throw new Error("Failed to fetch users")
-
-        const data = await response.json()
-        setUsers(data)
-        setFilteredUsers(data)
+        const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+        const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/users`, {
+          headers: {
+            'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+          }
+        });
+        if (!response.ok) throw new Error("Failed to fetch users");
+  
+        const data = await response.json();
+        setUsers(data);
+        setFilteredUsers(data);
       } catch (err) {
-        setError(err.message)
+        setError(err.message);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-
-    fetchUsers()
-  }, [])
+    };
+  
+    fetchUsers();
+  }, []);
 
   // Handle search
   useEffect(() => {
@@ -105,7 +106,7 @@ const Home = () => {
     )
     setFilteredUsers(filtered)
   }, [searchQuery, users])
-  
+
   const handleConnect = async (user) => {
     try {
       const token = localStorage.getItem('token'); // Retrieve the token from localStorage
