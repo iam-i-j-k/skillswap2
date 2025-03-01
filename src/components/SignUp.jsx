@@ -4,22 +4,45 @@ import axios from "axios"
 import { X, Check, ChevronDown, Loader2 } from "lucide-react"
 
 const PREDEFINED_SKILLS = [
-  "JavaScript",
-  "Python",
-  "React",
-  "Node.js",
-  "TypeScript",
-  "Java",
-  "C++",
-  "AWS",
-  "Docker",
-  "Kubernetes",
-  "Machine Learning",
-  "Data Science",
-  "UI/UX Design",
-  "Product Management",
-  "DevOps",
-  "Cloud Computing",
+// Programming & Development
+"JavaScript", "TypeScript", "React.js", "Next.js", "Vue.js", "Angular", "Node.js",
+"Express.js", "Python", "Django", "Flask", "Java", "Spring Boot", "Kotlin", "Swift",
+"C", "C++", "C#", ".NET", "PHP", "Laravel", "Ruby", "Ruby on Rails", "Go (Golang)",
+"Rust", "GraphQL", "REST APIs", "WebSockets", "HTML", "CSS", "Tailwind CSS",
+"Bootstrap", "Sass", "Material UI",
+
+// DevOps & Cloud
+"Docker", "Kubernetes", "CI/CD Pipelines", "GitHub Actions", "GitLab CI/CD",
+"Jenkins", "AWS", "AWS Lambda", "Azure", "Google Cloud Platform (GCP)",
+"Firebase", "Terraform", "Ansible", "Linux Administration", "Bash Scripting",
+"Nginx", "Apache",
+
+// Data Science & AI
+"Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-Learn",
+"NumPy", "Pandas", "Matplotlib", "Seaborn", "OpenCV", "Natural Language Processing (NLP)",
+"Computer Vision", "Big Data", "Apache Spark", "Hadoop", "SQL", "NoSQL",
+"MongoDB", "PostgreSQL", "MySQL", "Redis",
+
+// UI/UX & Design
+"Figma", "Adobe XD", "Sketch", "Photoshop", "Illustrator", "UI/UX Principles",
+"Wireframing", "Prototyping", "Responsive Design", "Accessibility (WCAG)",
+
+// Mobile Development
+"Android Development", "iOS Development", "Flutter", "React Native",
+"SwiftUI", "Jetpack Compose",
+
+// Cybersecurity
+"Ethical Hacking", "Penetration Testing", "Network Security", "Cryptography",
+"OWASP Top 10", "Security Best Practices", "ISO 27001",
+
+// Mathematics & Algorithms
+"Data Structures & Algorithms", "Competitive Programming", "Discrete Mathematics",
+"Linear Algebra", "Probability & Statistics",
+
+// Business & Soft Skills
+"Agile Methodology", "Scrum", "Kanban", "Project Management",
+"Communication Skills", "Leadership", "Team Collaboration", "Time Management",
+"Problem-Solving", "Critical Thinking", "Creativity", "Adaptability",
 ]
 
 const SignUp = () => {
