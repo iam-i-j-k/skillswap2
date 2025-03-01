@@ -127,7 +127,7 @@ const Home = () => {
           },
         }
       );
-      notify;
+      notify();
       console.log("Connection successful:", response.data);
       // Optionally, update the UI or show a success message
     } catch (err) {
