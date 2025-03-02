@@ -93,16 +93,7 @@ const Home = () => {
     fetchUsers();
   }, []);
 
-  useEffect(() => {
-    socket.on('connectionRequest', (data) => {
-      // Display notification to the user
-      toast.success(`New connection request from ${data.requester}`);
-    });
 
-    return () => {
-      socket.off('connectionRequest');
-    };
-  }, []);
 
   // Handle search
   useEffect(() => {
