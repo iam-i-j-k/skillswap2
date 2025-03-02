@@ -188,7 +188,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 };
 
 const Dashboard = () => {
-  const socket = io("http://localhost:8000"); // Adjust the URL as needed
+  const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL); // Adjust the URL as needed
 
   useEffect(() => {
     socket.on('connection_response', (data) => {
