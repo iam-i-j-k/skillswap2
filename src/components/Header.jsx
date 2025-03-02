@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react"
 
