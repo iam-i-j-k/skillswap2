@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import { Users, Video, MessageSquare, Calendar, X, Plus, Edit2, Save } from "lucide-react";
@@ -27,8 +29,6 @@ const SkillBadge = ({ skill, onRemove }) => (
     )}
   </span>
 );
-
-
 
 // Predefined Skills List
 const skillOptions = [
@@ -71,7 +71,7 @@ const skillOptions = [
   "Agile Methodology", "Scrum", "Kanban", "Project Management",
   "Communication Skills", "Leadership", "Team Collaboration", "Time Management",
   "Problem-Solving", "Critical Thinking", "Creativity", "Adaptability",
-  ]
+];
 
 const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
   const [editedProfile, setEditedProfile] = useState(profile);
@@ -187,12 +187,20 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
   );
 };
 
-// SkillBadge Component
-
-
-
-
 const Dashboard = () => {
+  const socket = io("http://localhost:8000"); // Adjust the URL as needed
+
+  useEffect(() => {
+    socket.on('connection_response', (data) => {
+      console.log('Connection response received:', data);
+      // Handle the response as needed
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const [username, setUsername] = useState("");
   const [greeting, setGreeting] = useState("");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -334,7 +342,7 @@ const Dashboard = () => {
               <h3 className="text-sm font-medium text-gray-500 mb-2">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {profile && profile.skills ? (
-                  profile.skills.map(skill => <SkillBadge key={skill} skill={skill}/>)
+                  profile.skills.map(skill => <SkillBadge key={skill} skill={skill}/> )
                 ) : (
                   <p>Loading...</p>
                 )}
