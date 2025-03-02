@@ -36,7 +36,7 @@ const Login = () => {
         {/* Logo or App Name */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-3xl font-bold mb-4">
-            A
+            SkillSwap
           </div>
           <h1 className="text-4xl font-bold text-gray-900">Welcome back</h1>
           <p className="mt-2 text-gray-600">Sign in to your account to continue</p>
