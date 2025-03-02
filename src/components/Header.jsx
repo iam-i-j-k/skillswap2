@@ -16,7 +16,7 @@ export function Header() {
     // Fetch connection requests on mount
     const fetchConnectionRequests = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections`, {
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
