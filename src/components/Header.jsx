@@ -1,38 +1,77 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Sparkles, Menu, X, Users, Layout, Search } from 'lucide-react'
+"use client"
+
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react"
 
 export function Header() {
   const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+
+  // Example notifications - replace with your actual data
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: "connection",
+      user: {
+        name: "Sarah Wilson",
+        avatar: "SW",
+        skill: "UI/UX Design",
+      },
+      timestamp: "2 min ago",
+    },
+    {
+      id: 2,
+      type: "connection",
+      user: {
+        name: "Michael Chen",
+        avatar: "MC",
+        skill: "React Development",
+      },
+      timestamp: "5 min ago",
+    },
+    {
+      id: 3,
+      type: "connection",
+      user: {
+        name: "Emma Davis",
+        avatar: "ED",
+        skill: "Digital Marketing",
+      },
+      timestamp: "10 min ago",
+    },
+  ])
+
+  const handleAcceptConnection = (notificationId) => {
+    // Handle accept connection logic here
+    setNotifications(notifications.filter((n) => n.id !== notificationId))
+  }
+
+  const handleRejectConnection = (notificationId) => {
+    // Handle reject connection logic here
+    setNotifications(notifications.filter((n) => n.id !== notificationId))
+  }
 
   const menuItems = [
     {
-      label: 'Find Skills',
-      icon: Search,
-      href: '#',
-    },
-    {
-      label: 'My Matches',
+      label: "My Matches",
       icon: Users,
-      href: '#',
+      href: "#",
     },
     {
-      label: 'Dashboard',
+      label: "Dashboard",
       icon: Layout,
-      onClick: () => navigate('/dashboard'),
+      onClick: () => navigate("/dashboard"),
     },
   ]
 
   return (
-    <header className="sticky top-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white shadow-lg">
+    <header className="relative bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
-          <a
-            href="/dashboard"
-            className="flex items-center space-x-3 group"
-          >
+          <a href="/dashboard" className="flex items-center space-x-3 group">
             <div className="relative">
               <div className="absolute -inset-3 bg-white/20 rounded-lg blur-lg transition-all group-hover:bg-white/30" />
               <Sparkles className="h-8 w-8 relative" />
@@ -47,7 +86,80 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {menuItems.map((item) => (
+            {/* Notifications */}
+            <div className="relative">
+              <button
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors group"
+              >
+                <div className="relative">
+                  <Bell className="w-5 h-5 opacity-70 group-hover:opacity-100" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
+                      {notifications.length}
+                    </span>
+                  )}
+                </div>
+                <span>Notifications</span>
+              </button>
+
+              {/* Notifications Dropdown */}
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-900">Connection Requests</h3>
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-gray-500">No new notifications</div>
+                  ) : (
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                        >
+                          <div className="flex items-start gap-3">
+                            {/* User Avatar */}
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                              {notification.user.avatar}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-900 font-medium">{notification.user.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Wants to connect • {notification.user.skill}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">{notification.timestamp}</p>
+
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-2 mt-2">
+                                <button
+                                  onClick={() => handleAcceptConnection(notification.id)}
+                                  className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-full hover:bg-purple-700 transition-colors"
+                                >
+                                  <Check className="w-3 h-3" />
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleRejectConnection(notification.id)}
+                                  className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
+                                >
+                                  <XMark className="w-3 h-3" />
+                                  Decline
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {menuItems.map((item) =>
               item.href ? (
                 <a
                   key={item.label}
@@ -66,8 +178,8 @@ export function Header() {
                   <item.icon className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                   <span>{item.label}</span>
                 </button>
-              )
-            ))}
+              ),
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -75,18 +187,28 @@ export function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
           >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <nav className="md:hidden py-4 px-2 space-y-2">
-            {menuItems.map((item) => (
+            {/* Mobile Notifications */}
+            <button
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <div className="flex items-center space-x-2">
+                <Bell className="w-5 h-5 opacity-70" />
+                <span>Notifications</span>
+              </div>
+              {notifications.length > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{notifications.length}</span>
+              )}
+            </button>
+
+            {menuItems.map((item) =>
               item.href ? (
                 <a
                   key={item.label}
@@ -105,9 +227,60 @@ export function Header() {
                   <item.icon className="w-5 h-5 opacity-70" />
                   <span>{item.label}</span>
                 </button>
-              )
-            ))}
+              ),
+            )}
           </nav>
+        )}
+
+        {/* Mobile Notifications Panel */}
+        {isMobileMenuOpen && isNotificationsOpen && (
+          <div className="md:hidden bg-white rounded-lg shadow-lg mt-2 mb-4">
+            <div className="px-4 py-2 border-b border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900">Connection Requests</h3>
+            </div>
+
+            {notifications.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-gray-500">No new notifications</div>
+            ) : (
+              <div className="max-h-96 overflow-y-auto">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                        {notification.user.avatar}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 font-medium">{notification.user.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Wants to connect • {notification.user.skill}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{notification.timestamp}</p>
+
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => handleAcceptConnection(notification.id)}
+                            className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-full hover:bg-purple-700 transition-colors"
+                          >
+                            <Check className="w-3 h-3" />
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleRejectConnection(notification.id)}
+                            className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
+                          >
+                            <XMark className="w-3 h-3" />
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -116,3 +289,4 @@ export function Header() {
     </header>
   )
 }
+
