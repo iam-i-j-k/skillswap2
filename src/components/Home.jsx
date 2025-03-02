@@ -47,7 +47,7 @@ const UserCard = ({ user, onConnect }) => (
       <div className="flex gap-2">
         <button
           onClick={() => onConnect(user)}
-          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          className="flex space-x-2 p-2 bg-purple-600 text-white hover:bg-purple-500 rounded-lg transition-colors"
           title="Connect"
         >
           Connect
