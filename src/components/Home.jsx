@@ -53,20 +53,6 @@ const UserCard = ({ user, onConnect }) => (
           <UserPlus className="w-5 h-5" />
         </button>
         <Toaster />
-        <button
-          onClick={() => (window.location.href = `/video-call/${user._id}`)}
-          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-          title="Start Video Call"
-        >
-          <Video className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => (window.location.href = `/chat/${user._id}`)}
-          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-          title="Send Message"
-        >
-          <MessageSquare className="w-5 h-5" />
-        </button>
       </div>
     </div>
 
