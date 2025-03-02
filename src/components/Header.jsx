@@ -1,11 +1,14 @@
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react";
+import { io } from "socket.io-client";
+
+const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
 
 export function Header() {
-  const navigate = useNavigate()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // Example notifications - replace with your actual data
   const [notifications, setNotifications] = useState([
@@ -39,17 +42,39 @@ export function Header() {
       },
       timestamp: "10 min ago",
     },
-  ])
+  ]);
+
+  useEffect(() => {
+    // Listen for connection requests
+    socket.on("connectionRequest", (data) => {
+      const newNotification = {
+        id: Date.now(), // Generate a unique ID for the notification
+        type: "connection",
+        user: {
+          name: data.requester.username,
+          avatar: data.requester.username.charAt(0).toUpperCase(),
+          skill: data.requester.skills.join(", "),
+        },
+        timestamp: "Just now",
+      };
+      setNotifications((prevNotifications) => [newNotification, ...prevNotifications]);
+    });
+
+    // Clean up the event listener on component unmount
+    return () => {
+      socket.off("connectionRequest");
+    };
+  }, []);
 
   const handleAcceptConnection = (notificationId) => {
     // Handle accept connection logic here
-    setNotifications(notifications.filter((n) => n.id !== notificationId))
-  }
+    setNotifications(notifications.filter((n) => n.id !== notificationId));
+  };
 
   const handleRejectConnection = (notificationId) => {
     // Handle reject connection logic here
-    setNotifications(notifications.filter((n) => n.id !== notificationId))
-  }
+    setNotifications(notifications.filter((n) => n.id !== notificationId));
+  };
 
   const menuItems = [
     {
@@ -62,7 +87,7 @@ export function Header() {
       icon: Layout,
       onClick: () => navigate("/dashboard"),
     },
-  ]
+  ];
 
   return (
     <header className="relative bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white shadow-lg">
@@ -285,6 +310,6 @@ export function Header() {
       {/* Decorative bottom border */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-300 via-white/20 to-purple-300" />
     </header>
-  )
+  );
 }
 
