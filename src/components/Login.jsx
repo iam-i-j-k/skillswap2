@@ -62,7 +62,7 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
+            className="w-full flex cursor-pointer justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
             disabled={isLoading}
           >
             {isLoading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Sign In'}

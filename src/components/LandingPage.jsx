@@ -135,7 +135,7 @@ function LandingPage() {
               <a href={selectedMember.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-purple-600">
                 <Github className="h-6 w-6" />
               </a>
-              <button onClick={() => setSelectedMember(null)} className="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">Close</button>
+              <button onClick={() => setSelectedMember(null)} className="bg-gray-100 cursor-pointer px-4 py-2 rounded-lg hover:bg-gray-200">Close</button>
             </div>
           </div>
         </div>

@@ -43,7 +43,7 @@ const ChatPage = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
             Having issues?{" "}
-            <button className="text-purple-600 hover:text-purple-700 font-medium">Contact Support</button>
+            <button className="text-purple-600 cursor-pointer hover:text-purple-700 font-medium">Contact Support</button>
           </p>
         </div>
       </div>

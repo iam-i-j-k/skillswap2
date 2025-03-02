@@ -21,7 +21,7 @@ const SkillBadge = ({ skill, onRemove }) => (
   <span className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm">
     {skill}
     {onRemove && (
-      <button onClick={() => onRemove(skill)} className="hover:text-red-500">
+      <button onClick={() => onRemove(skill)} className="cursor-pointer hover:text-red-500">
         <X className="w-3 h-3" />
       </button>
     )}
@@ -101,7 +101,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Edit Profile</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} className="cursor-pointer text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -157,7 +157,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
                 <button
                   onClick={handleAddSkill}
                   type="button"
-                  className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  className="px-3 py-2 bg-indigo-600 cursor-pointer text-white rounded-lg hover:bg-indigo-700"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -168,13 +168,13 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border cursor-pointer border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                className="px-4 py-2 bg-indigo-600 cursor-pointer text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 Save Changes
@@ -286,13 +286,13 @@ const Dashboard = () => {
             <div className="mt-6 md:mt-0 space-x-4 space-y-4">
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="bg-white/10 text-white px-6 py-2 rounded-lg font-medium hover:bg-white/20 transition-colors"
+                className="bg-white/10 text-white cursor-pointer px-6 py-2 rounded-lg font-medium hover:bg-white/20 transition-colors"
               >
                 Edit Profile
               </button>
               <button
                 onClick={() => (window.location.href = "/home")}
-                className="bg-white text-indigo-600 px-6 py-2 rounded-lg font-medium hover:bg-indigo-50 transition-colors"
+                className="bg-white text-indigo-600 cursor-pointer px-6 py-2 rounded-lg font-medium hover:bg-indigo-50 transition-colors"
               >
                 Connect with People
               </button>
@@ -303,7 +303,7 @@ const Dashboard = () => {
                   localStorage.removeItem("token");
                   window.location.href = "/login";
                 }}
-                className="bg-red-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
+                className="bg-red-500 text-white cursor-pointer px-6 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
               >
                 Logout
               </button>
@@ -319,7 +319,7 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold">Profile</h2>
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="text-indigo-600 hover:text-indigo-700 flex items-center gap-2"
+              className="text-indigo-600 cursor-pointer hover:text-indigo-700 flex items-center gap-2"
             >
               <Edit2 className="w-4 h-4" />
               Edit

@@ -38,7 +38,7 @@ function Chat({ userId, receiverId }) {
         <button
           type="submit"
           disabled={!message.trim()}
-          className="px-4 py-2 bg-purple-600 text-white rounded-r-lg"
+          className="px-4 py-2 cursor-pointer bg-purple-600 text-white rounded-r-lg"
         >
           Send
         </button>

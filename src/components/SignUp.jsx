@@ -231,7 +231,7 @@ const SignUp = () => {
                 <button
                   type="button"
                   onClick={() => setShowSkillsDropdown(!showSkillsDropdown)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors flex items-center justify-between"
+                  className="w-full px-3 cursor-pointer py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors flex items-center justify-between"
                 >
                   <span className="text-gray-500">Select or add skills...</span>
                   <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -252,7 +252,7 @@ const SignUp = () => {
                         <button
                           type="button"
                           onClick={addCustomSkill}
-                          className="px-2 py-1 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700 transition-colors"
+                          className="px-2 py-1 cursor-pointer bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700 transition-colors"
                         >
                           Add
                         </button>
@@ -263,7 +263,7 @@ const SignUp = () => {
                             key={skill}
                             type="button"
                             onClick={() => toggleSkill(skill)}
-                            className="w-full text-left px-3 py-2 hover:bg-purple-50 rounded-md text-sm flex items-center justify-between"
+                            className="w-full cursor-pointer text-left px-3 py-2 hover:bg-purple-50 rounded-md text-sm flex items-center justify-between"
                           >
                             {skill}
                             {formData.skills.includes(skill) && <Check className="w-4 h-4 text-purple-600" />}
@@ -296,7 +296,7 @@ const SignUp = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full cursor-pointer flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
