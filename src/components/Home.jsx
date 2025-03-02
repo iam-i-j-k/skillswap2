@@ -50,6 +50,7 @@ const UserCard = ({ user, onConnect }) => (
           className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
           title="Connect"
         >
+          Connect
           <UserPlus className="w-5 h-5" />
         </button>
         <Toaster />
