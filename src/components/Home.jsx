@@ -50,7 +50,7 @@ const UserCard = ({ user, onConnect }) => (
           className="flex items-center justify-center space-x-2 p-2 bg-purple-600 text-white hover:bg-purple-500 rounded-lg transition-colors"
           title="Connect"
         >
-          <p className="text-lg">Connect</p>
+          <p className="text-lg font-semibold">Connect</p>
           <UserPlus className="w-5 h-5 text-lg" />
         </button>
         <Toaster />
