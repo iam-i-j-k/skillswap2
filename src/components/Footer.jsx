@@ -1,4 +1,5 @@
-import React, { Facebook, Twitter, Linkedin, Mail, MessageCircle, MapPin } from "lucide-react"
+import React from "react";
+import { Facebook, Twitter, Linkedin, Mail, MessageCircle, MapPin } from "lucide-react"
 
 function Footer() {
   return (
