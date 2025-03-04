@@ -13,8 +13,8 @@ function Footer() {
               <span className="text-xl font-bold">SwapSmart</span>
             </div>
             <div className="space-y-2 text-gray-600">
-              <p>📧 swapsmart@gmail.com</p>
-              <p>💬 help@swapsmart.com</p>
+              <p>📧 skillswap@gmail.com</p>
+              <p>💬 help@skillswap.com</p>
               <p>📍 Somewhere in the World</p>
             </div>
           </div>
