@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react";
 import { io } from "socket.io-client";
-import axios from "axios";
 
 const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
 
@@ -13,62 +12,15 @@ export function Header() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    // Fetch connection requests on mount
-    const fetchConnectionRequests = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const connectionRequests = response.data.map((connection) => ({
-          id: connection._id,
-          type: "connection",
-          user: {
-            name: connection.requester.username,
-            avatar: connection.requester.username.charAt(0).toUpperCase(),
-            skill: connection.requester.skills.join(", "),
-          },
-          timestamp: new Date(connection.createdAt).toLocaleTimeString(),
-        }));
-        setNotifications(connectionRequests);
-      } catch (error) {
-        console.error('Error fetching connection requests:', error);
-      }
-    };
-
-    fetchConnectionRequests();
-
-    // Listen for connection requests
-    socket.on("connectionRequest", (data) => {
-      const newNotification = {
-        id: data.connection._id,
-        type: "connection",
-        user: {
-          name: data.requester.username,
-          avatar: data.requester.username.charAt(0).toUpperCase(),
-          skill: data.requester.skills.join(", "),
-        },
-        timestamp: "Just now",
-      };
-      setNotifications((prevNotifications) => [newNotification, ...prevNotifications]);
-    });
-
-    // Clean up the event listener on component unmount
+    socket.on('pushNotification', (data)=>{
+      setNotifications((prev) => [...prev, data]);
+    })
+  
     return () => {
-      socket.off("connectionRequest");
-    };
-  }, []);
-
-  const handleAcceptConnection = (notificationId) => {
-    // Handle accept connection logic here
-    setNotifications(notifications.filter((n) => n.id !== notificationId));
-  };
-
-  const handleRejectConnection = (notificationId) => {
-    // Handle reject connection logic here
-    setNotifications(notifications.filter((n) => n.id !== notificationId));
-  };
+      socket.off('pushNotification')
+    }
+  }, [])
+  
 
   const menuItems = [
     {
