@@ -4,10 +4,8 @@ import Footer from "./Footer";
 import { Users, Loader2, Search, UserPlus } from "lucide-react";
 import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
-// import { io } from "socket.io-client";
 import ConnectionRequests from './ConnectionRequests'; // Import the new component
 
-// const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
 
 const notify = () => toast.success('Request Sent!');
 const showError = (err) => toast.error(err.response?.data?.error || err.message);
