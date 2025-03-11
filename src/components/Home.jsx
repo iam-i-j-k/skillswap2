@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react"
-import { Header } from "./Header"
-import Footer from "./Footer"
-import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus, User2, MailIcon } from "lucide-react"
+import React, { useEffect, useState } from "react";
+import { Header } from "./Header";
+import Footer from "./Footer";
+import { Users, Loader2, Search, UserPlus } from "lucide-react";
 import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
+import ConnectionRequests from './ConnectionRequests'; // Import the new component
 
-const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
+// const socket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL);
 
 const notify = () => toast.success('Request Sent!');
 const showError = (err) => toast.error(err.response?.data?.error || err.message);
-
 
 const UserCard = ({ user, onConnect }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -60,14 +60,14 @@ const UserCard = ({ user, onConnect }) => (
     {/* Bio */}
     {user.bio && <p className="mt-4 text-sm text-gray-600 line-clamp-2">{user.bio}</p>}
   </div>
-)
+);
 
 const Home = () => {
-  const [users, setUsers] = useState([])
-  const [filteredUsers, setFilteredUsers] = useState([])
-  const [error, setError] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -79,7 +79,7 @@ const Home = () => {
           }
         });
         if (!response.ok) throw new Error("Failed to fetch users");
-  
+
         const data = await response.json();
         setUsers(data);
         setFilteredUsers(data);
@@ -89,11 +89,9 @@ const Home = () => {
         setIsLoading(false);
       }
     };
-  
+
     fetchUsers();
   }, []);
-
-
 
   // Handle search
   useEffect(() => {
@@ -102,14 +100,14 @@ const Home = () => {
         user.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.skills?.some((skill) => skill.toLowerCase().includes(searchQuery.toLowerCase())),
-    )
-    setFilteredUsers(filtered)
-  }, [searchQuery, users])
+    );
+    setFilteredUsers(filtered);
+  }, [searchQuery, users]);
 
   const handleConnect = async (user) => {
     try {
       const token = localStorage.getItem('token'); // Retrieve the token from localStorage
-  
+
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections`,
         { userId: user._id },
@@ -154,6 +152,7 @@ const Home = () => {
           </div>
         </div>
 
+
         {/* Error State */}
         {error && <div className="rounded-lg bg-red-50 p-4 text-sm text-red-500">{error}</div>}
 
@@ -179,12 +178,14 @@ const Home = () => {
             ))}
           </div>
         )}
+
+
       </main>
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
 
