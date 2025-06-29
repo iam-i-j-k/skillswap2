@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react";
+import { io } from 'socket.io-client';
 
 export function Header({ connectionRequests, handleAccept, handleDecline }) {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [socket, setSocket] = useState(null);
 
   const menuItems = [
     {
@@ -19,6 +21,53 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
       onClick: () => navigate("/dashboard"),
     },
   ];
+
+  React.useEffect(() => {
+    const newSocket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:8000', {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      auth: {
+        token: localStorage.getItem('token')
+      }
+    });
+
+    setSocket(newSocket);
+
+    // Join user-specific rooms
+    // if (user?._id) {
+    //   newSocket.emit('join-connection-rooms', user._id);
+    // }
+
+    // Listen for new connection requests
+    newSocket.on('new-connection-request', (request) => {
+      setConnectionRequests(prev => [...prev, request]);
+    });
+
+    // Listen for connection request updates
+    newSocket.on('connection-request-sent', (request) => {
+      setConnectionRequests(prev => [...prev, request]);
+    });
+
+    newSocket.on('request-accepted', (request) => {
+      setConnectionRequests(prev => 
+        prev.map(r => r._id === request._id ? request : r)
+      );
+    });
+
+    newSocket.on('request-rejected', (request) => {
+      setConnectionRequests(prev => 
+        prev.map(r => r._id === request._id ? request : r)
+      );
+    });
+
+    return () => {
+      if (newSocket) {
+        newSocket.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <header className="relative bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white shadow-lg">
@@ -234,4 +283,3 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
     </header>
   );
 }
-
