@@ -13,7 +13,7 @@ function Footer() {
                 <span className="text-white font-bold text-lg">S</span>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                SwapSmart
+                SkillSwap
               </span>
             </div>
             <div className="space-y-3 text-gray-600">
