@@ -23,7 +23,7 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
   ];
 
   React.useEffect(() => {
-    const newSocket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:8000', {
+    const newSocket = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL || 'http://localhost:8000', {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,

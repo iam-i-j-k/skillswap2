@@ -177,32 +177,36 @@ const Chat = () => {
     window.open(calendlyLink, "_blank")
   }
 
-  const handleClearChat = async () => {
-    if (!window.confirm('Are you sure you want to clear this chat? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/clear/${chatUserId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      
-      // Clear local state
-      setMessages([]);
-      
-      // Emit clear chat event to other user
-      socket.emit('clearChat', {
+  const handleClearChat = () => {
+    if (!socket || !currentUser?._id || !chatUserId) return;
+    if (window.confirm("Are you sure you want to clear this chat?")) {
+      socket.emit("clearChat", {
         userId: currentUser._id,
         chatUserId
       });
-    } catch (err) {
-      console.error('Failed to clear chat', err);
-      alert('Failed to clear chat. Please try again.');
     }
   };
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("chatCleared", ({ chatUserId: clearedId, userId: clearedUserId }) => {
+      // If this chat is between these two users, clear
+      if (
+        (chatUserId === clearedId && currentUser._id === clearedUserId) ||
+        (chatUserId === clearedUserId && currentUser._id === clearedId)
+      ) {
+        setMessages([]);
+      }
+    });
+    return () => {
+      socket.off("chatCleared");
+    };
+  }, [socket, chatUserId, currentUser?._id]);
+
+  useEffect(() => {
+    if (!socket || !currentUser?._id) return;
+    socket.emit('join-connection-rooms', currentUser._id);
+  }, [socket, currentUser?._id]);
 
   if (!chatUserId) return <div>No user selected for chat.</div>
 
