@@ -1,12 +1,75 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark } from "lucide-react";
+<<<<<<< HEAD
 import Matches from "./Matches";
 
 export function Header({ connectionRequests, handleAccept, handleDecline }) {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+=======
+import axios from "axios";
+import toast from "react-hot-toast";
+
+export function Header() {
+  const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setNotifications(response.data);
+      } catch (err) {
+        console.error('Error fetching connection requests:', err);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
+  const handleAcceptConnection = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections/${requestId}/accept`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success('Connection accepted!');
+      setNotifications(notifications.filter((notification) => notification._id !== requestId));
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message);
+    }
+  };
+
+  const handleRejectConnection = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections/${requestId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success('Connection rejected!');
+      setNotifications(notifications.filter((notification) => notification._id !== requestId));
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message);
+    }
+  };
+>>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
 
   const menuItems = [
     {
@@ -69,6 +132,7 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
                     <div className="px-4 py-3 text-sm text-gray-500">No new notifications</div>
                   ) : (
                     <div className="max-h-96 overflow-y-auto">
+<<<<<<< HEAD
                       {connectionRequests
                         .filter((req) => req.requester && (req.requester.username || req.requester.email))
                         .map((request) => (
@@ -103,6 +167,42 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
                                     Decline
                                   </button>
                                 </div>
+=======
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification._id}
+                          className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                        >
+                          <div className="flex items-start gap-3">
+                            {/* User Avatar */}
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                              {notification.requester.username.charAt(0)}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-900 font-medium">{notification.requester.username}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Wants to connect • {notification.requester.skills.join(', ')}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">{new Date(notification.createdAt).toLocaleString()}</p>
+
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-2 mt-2">
+                                <button
+                                  onClick={() => handleAcceptConnection(notification._id)}
+                                  className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-full hover:bg-purple-700 transition-colors"
+                                >
+                                  <Check className="w-3 h-3" />
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleRejectConnection(notification._id)}
+                                  className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
+                                >
+                                  <XMark className="w-3 h-3" />
+                                  Decline
+                                </button>
+>>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
                               </div>
                             </div>
                           </div>
@@ -186,6 +286,7 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
               <div className="px-4 py-3 text-sm text-gray-500">No new notifications</div>
             ) : (
               <div className="max-h-96 overflow-y-auto">
+<<<<<<< HEAD
                 {connectionRequests
                   .filter((req) => req.requester && (req.requester.username || req.requester.email))
                   .map((request) => (
@@ -218,6 +319,38 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
                               Decline
                             </button>
                           </div>
+=======
+                {notifications.map((notification) => (
+                  <div
+                    key={notification._id}
+                    className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                        {notification.requester.username.charAt(0)}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 font-medium">{notification.requester.username}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Wants to connect • {notification.requester.skills.join(', ')}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{new Date(notification.createdAt).toLocaleString()}</p>
+
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => handleAcceptConnection(notification._id)}
+                            className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-full hover:bg-purple-700 transition-colors"
+                          >
+                            <Check className="w-3 h-3" />
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleRejectConnection(notification._id)}
+                            className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"
+                          >
+                            <XMark className="w-3 h-3" />
+                            Decline
+                          </button>
+>>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
                         </div>
                       </div>
                     </div>
