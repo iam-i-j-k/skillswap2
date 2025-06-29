@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Header } from "./Header";
 import Footer from "./Footer";
-<<<<<<< HEAD
 import { Users, Mail, Video, MessageSquare, Loader2, Search, UserPlus } from "lucide-react";
 import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
@@ -9,22 +8,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUsers, selectAllUsers, selectUsersStatus, selectUsersError, addUser } from "../features/users/userSlice";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
-=======
-import { Users, Loader2, Search, UserPlus } from "lucide-react";
-import axios from "axios";
-import toast, { Toaster } from 'react-hot-toast';
-import ConnectionRequests from './ConnectionRequests'; // Import the new component
-
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
 
 const notify = () => toast.success('Request Sent!');
 const showError = (err) => toast.error(err.response?.data?.error || err.message);
 
-<<<<<<< HEAD
 const UserCard = ({ user, onConnect, isConnected, isPending, onRemoveConnection }) => (
-=======
-const UserCard = ({ user, onConnect }) => (
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
     <div className="flex items-start justify-between">
       <div className="flex gap-4">
@@ -98,15 +86,10 @@ const UserCard = ({ user, onConnect }) => (
 );
 
 const Home = () => {
-<<<<<<< HEAD
-=======
-  const [users, setUsers] = useState([]);
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-<<<<<<< HEAD
   const [connectionRequests, setConnectionRequests] = useState([]);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
@@ -127,8 +110,6 @@ const Home = () => {
       dispatch(fetchUsers());
     }
   }, [usersStatus, dispatch]);
-=======
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
 
   useEffect(() => {
     const fetchConnectionRequests = async () => {
@@ -139,21 +120,12 @@ const Home = () => {
             'Authorization': `Bearer ${token}` // Include the token in the Authorization header
           }
         });
-<<<<<<< HEAD
         setConnectionRequests(Array.isArray(response.data.connections) ? response.data.connections : []);
-=======
-        if (!response.ok) throw new Error("Failed to fetch users");
-
-        const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
       } catch (err) {
         showError(err);
       }
     };
 
-<<<<<<< HEAD
     fetchConnectionRequests();
   }, []);
 
@@ -174,11 +146,6 @@ const Home = () => {
     fetchConnections();
   }, []);
 
-=======
-    fetchUsers();
-  }, []);
-
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
   // Handle search
   useEffect(() => {
     const filtered = (Array.isArray(users) ? users : []).filter(
@@ -193,16 +160,9 @@ const Home = () => {
   // When user clicks connect
   const handleConnect = async (user) => {
     try {
-<<<<<<< HEAD
       const token = localStorage.getItem('token');
       await axios.post(
         `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`,
-=======
-      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/connections`,
->>>>>>> e475b68b5c9c4bdb3117acb310ade2e35c5a34d3
         { userId: user._id },
         {
           headers: {
