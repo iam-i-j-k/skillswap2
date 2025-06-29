@@ -9,7 +9,8 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL, {
-      transports: ["websocket"], // optional: force websocket for stability
+      transports: ["websocket"],
+      withCredentials: true,
     });
 
     socketRef.current.on("connect", () => {
@@ -29,6 +30,5 @@ export const SocketProvider = ({ children }) => {
     </SocketContext.Provider>
   );
 };
-
 
 export const useSocket = () => useContext(SocketContext);
