@@ -27,9 +27,11 @@ const Chat = () => {
   const socket = useSocket()
   const calendlyLink = "https://calendly.com/irfanjankhan7860"
 
+  console.log("Socket ID", socket?.id); // Must print a real socket ID
+
   useEffect(() => {
-    if (!socket) return
-    socket.emit("join", currentUser._id)
+    if (!socket) return <div>Connecting to chat server...</div>;
+
 
     socket.on("receiveMessage", (message) => {
       setMessages((prev) => [...prev, message])
@@ -76,27 +78,30 @@ const Chat = () => {
     }
   }, [socket, currentUser._id, chatUserId])
 
-  useEffect(() => {
-    const fetchChat = async () => {
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/history/${chatUserId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        )
-        setMessages(res.data.messages)
-        setRecipient(res.data.recipient)
+useEffect(() => {
+  const fetchChat = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/history/${chatUserId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessages(res.data.messages);
+      setRecipient(res.data.recipient);
+      if (socket) {
         socket.emit("markAsDelivered", {
           userId: currentUser._id,
           chatUserId,
-        })
-      } catch (err) {
-        console.error("Failed to load chat", err)
+        });
       }
+    } catch (err) {
+      console.error("Failed to load chat", err);
     }
-    fetchChat()
-  }, [chatUserId, token])
+  };
+  if (socket) {
+    fetchChat();
+  }
+}, [chatUserId, token, socket]);
+
 
   useEffect(() => {
     const handleClickOutside = () => setSelectedMessageId(null)
@@ -104,7 +109,12 @@ const Chat = () => {
     return () => document.removeEventListener("click", handleClickOutside)
   }, [])
 
-  useEffect(() => {
+useEffect(() => {
+  if (socket && currentUser?._id) {
+    socket.emit("join-connection-rooms", currentUser._id);
+  }
+
+
     if (socket && chatUserId && currentUser?._id) {
       const seenTimeout = setTimeout(() => {
         socket.emit("markAsSeen", {
@@ -143,12 +153,16 @@ const Chat = () => {
   }
 
   const handleDelete = (messageId) => {
-    socket.emit("deleteMessage", { messageId, userId: currentUser._id })
+    if (window.confirm("Delete this message?")) {
+      socket.emit("deleteMessage", { messageId }) // userId is not required by backend
+      console.log("Deleting", messageId, socket); // Is socket null?
+    }
   }
 
   const handleEdit = (messageId, newText) => {
     socket.emit("editMessage", { messageId, userId: currentUser._id, newText })
-    setEditing(null) // Close editing mode after sending edit
+    setEditing(null)
+    setEditText("")
   }
 
   useEffect(() => {
@@ -156,15 +170,29 @@ const Chat = () => {
     socket.on("messageReacted", ({ messageId, userId, emoji }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, reactions: [...(msg.reactions || []), { user: userId, emoji }] } : msg,
+          msg._id === messageId
+  ? {
+      ...msg,
+      reactions: [
+        ...(msg.reactions || []),
+        { userId, emoji }
+      ],
+    }
+  : msg,
         ),
       )
     })
     socket.on("messageDeleted", ({ messageId }) => {
       setMessages((prev) => prev.filter((msg) => msg._id !== messageId))
     })
-    socket.on("messageEdited", ({ messageId, newText }) => {
-      setMessages((prev) => prev.map((msg) => (msg._id === messageId ? { ...msg, text: newText } : msg)))
+    socket.on("messageEdited", ({ message }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === message._id
+            ? { ...msg, ...message }
+            : msg
+        )
+      )
     })
     return () => {
       socket.off("messageReacted")
@@ -188,6 +216,17 @@ const Chat = () => {
   };
 
   useEffect(() => {
+  if (!socket) return;
+  const handleTestResponse = (data) => {
+    alert("Test event response: " + JSON.stringify(data));
+  };
+  socket.on("testResponse", handleTestResponse);
+  return () => {
+    socket.off("testResponse", handleTestResponse);
+  };
+}, [socket]);
+
+  useEffect(() => {
     if (!socket) return;
     socket.on("chatCleared", ({ chatUserId: clearedId, userId: clearedUserId }) => {
       // If this chat is between these two users, clear
@@ -205,8 +244,8 @@ const Chat = () => {
 
   useEffect(() => {
     if (!socket || !currentUser?._id) return;
-    socket.emit('join-connection-rooms', currentUser._id);
-  }, [socket, currentUser?._id]);
+    socket.emit("join-connection-rooms", currentUser._id)
+  }, [socket, currentUser._id, chatUserId])
 
   if (!chatUserId) return <div>No user selected for chat.</div>
 
@@ -232,6 +271,7 @@ const Chat = () => {
             recipient={recipient}
           />
         </div>
+        
         <div className="flex justify-between items-center mb-4">
           <ChatActions
             setActiveModal={setActiveModal}
@@ -268,6 +308,13 @@ const Chat = () => {
           />
         )}
       </div>
+
+{socket && (
+  <button onClick={() => socket.emit("test", { hello: "world" })}>
+    Emit test event
+  </button>
+)}
+
 
       <ResourceModal
         activeModal={activeModal}

@@ -34,7 +34,14 @@ const Message = ({
       >
         <div>
           {/* Render text if present */}
-          {msg.text && <span>{msg.text}</span>}
+          {msg.text && (
+            <span>
+              {msg.text}
+              {msg.updatedAt && msg.updatedAt !== msg.createdAt && (
+                <span className="ml-2 text-xs text-gray-400">(edited)</span>
+              )}
+            </span>
+          )}
 
           {/* Render file if present */}
           {msg.file && msg.file.url && (
@@ -125,8 +132,9 @@ const Message = ({
           <button
           aria-label="Delete Message"
             onClick={(e) => {
-              e.stopPropagation();
+              // e.stopPropagation();
               onDelete(msg._id);
+              console.log("Attempting to delete:", msg._id)
             }}
             className="text-red-500"
           >
@@ -138,7 +146,6 @@ const Message = ({
               e.stopPropagation();
               setEditing(msg._id);
               setEditText(msg.text);
-              onMessageClick(null); // Clear selection when editing starts
             }}
             className="text-yellow-500"
           >
@@ -154,7 +161,7 @@ const Message = ({
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && editText.trim()) {
                 onEdit(msg._id, editText);
                 setEditing(null);
               } else if (e.key === 'Escape') {
@@ -165,14 +172,18 @@ const Message = ({
             onClick={(e) => e.stopPropagation()}
             className="border px-2 py-1 rounded w-full"
             autoFocus
+            disabled={editText.trim() === ""}
           />
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onEdit(msg._id, editText);
-              setEditing(null);
+              if (editText.trim()) {
+                onEdit(msg._id, editText);
+                setEditing(null);
+              }
             }}
-            className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+            className={`bg-green-600 text-white px-3 py-1 rounded text-sm ${editText.trim() === "" ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={editText.trim() === ""}
           >
             Save
           </button>

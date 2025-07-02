@@ -64,10 +64,8 @@ const ResourceModal = ({ activeModal, setActiveModal, recipient, currentUser }) 
           },
         }
       );
-      const data = await response.data;
       
 
-      // ✅ Emit message in correct structure
       if (socket) {
         socket.emit("sendMessage", {
           sender: currentUser._id,
@@ -79,7 +77,7 @@ const ResourceModal = ({ activeModal, setActiveModal, recipient, currentUser }) 
             mimetype: response.data.mimetype,
             size: file.size
           },
-          type: "file", // important to help renderer identify it's a file message
+          type: "file",
           createdAt: new Date().toISOString(),
           delivered: false,
           seen: false

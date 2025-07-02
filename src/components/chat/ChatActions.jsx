@@ -1,11 +1,15 @@
 import React from "react";
+import EmojiPicker from "./EmojiPicker";
+
 
 const ChatActions = ({ 
   setActiveModal, 
   openCalendly, 
   showEmoji, 
   setShowEmoji,
-  handleClearChat
+  handleClearChat,
+  input,
+  setInput,
 }) => {
   return (
     <div className="flex gap-2 flex-wrap">
@@ -39,6 +43,17 @@ const ChatActions = ({
       >
         🗑️ Clear Chat
       </button>
+      {showEmoji && (
+        <EmojiPicker
+          showEmoji={showEmoji}
+          input={input}
+          setInput={setInput}
+          onSelectEmoji={(emoji) => {
+            setInput(input + emoji);
+            setShowEmoji(false);
+          }}
+        />
+      )}
     </div>
   );
 };
