@@ -233,7 +233,6 @@ const Dashboard = () => {
         }
       );
       
-      console.log("API Response:", response.data.user);
   
       setProfile(response.data);
       localStorage.setItem("user", JSON.stringify(response.data.user));

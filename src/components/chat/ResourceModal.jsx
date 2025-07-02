@@ -65,7 +65,6 @@ const ResourceModal = ({ activeModal, setActiveModal, recipient, currentUser }) 
         }
       );
       const data = await response.data;
-      console.log("Uploaded: ",data);
       
 
       // ✅ Emit message in correct structure
