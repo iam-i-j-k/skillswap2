@@ -134,7 +134,6 @@ const Message = ({
             onClick={(e) => {
               // e.stopPropagation();
               onDelete(msg._id);
-              console.log("Attempting to delete:", msg._id)
             }}
             className="text-red-500"
           >

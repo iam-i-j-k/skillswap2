@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 
-const SwapModal = ({ activeModal, setActiveModal, recipient, currentUser }) => {
-
+const SwapModal = ({
+  activeModal,
+  setActiveModal,
+  recipient,
+  currentUser,
+  recipientSkills = [],
+  userSkills = [],
+}) => {
   const [selectedSkill, setSelectedSkill] = useState("");
   const [desiredSkill, setDesiredSkill] = useState("");
-
-  const userSkills = currentUser?.skills || [];
 
   if (activeModal !== "swap") return null;
 
@@ -23,18 +27,29 @@ const SwapModal = ({ activeModal, setActiveModal, recipient, currentUser }) => {
         >
           <option value="">Select your skill</option>
           {userSkills.map((skill, idx) => (
-            <option key={idx} value={skill}>{skill}</option>
+            <option key={idx} value={skill}>
+              {skill}
+            </option>
           ))}
         </select>
         <label className="block mb-2 text-sm">Their Skill You Want:</label>
-        <input
+        <select
           className="border px-2 py-1 w-full mb-3"
-          placeholder="e.g. UI Design"
           value={desiredSkill}
           onChange={(e) => setDesiredSkill(e.target.value)}
-        />
+        >
+          <option value="">Select their skill</option>
+          {recipientSkills.map((skill, idx) => (
+            <option key={idx} value={skill}>
+              {skill}
+            </option>
+          ))}
+        </select>
         <div className="flex justify-end gap-2">
-          <button onClick={() => setActiveModal(null)} className="text-sm text-gray-600">
+          <button
+            onClick={() => setActiveModal(null)}
+            className="text-sm text-gray-600"
+          >
             Cancel
           </button>
           <button

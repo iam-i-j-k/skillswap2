@@ -27,7 +27,6 @@ const Chat = () => {
   const socket = useSocket()
   const calendlyLink = "https://calendly.com/irfanjankhan7860"
 
-  console.log("Socket ID", socket?.id); // Must print a real socket ID
 
   useEffect(() => {
     if (!socket) return <div>Connecting to chat server...</div>;
@@ -155,7 +154,6 @@ useEffect(() => {
   const handleDelete = (messageId) => {
     if (window.confirm("Delete this message?")) {
       socket.emit("deleteMessage", { messageId }) // userId is not required by backend
-      console.log("Deleting", messageId, socket); // Is socket null?
     }
   }
 
@@ -309,11 +307,7 @@ useEffect(() => {
         )}
       </div>
 
-{socket && (
-  <button onClick={() => socket.emit("test", { hello: "world" })}>
-    Emit test event
-  </button>
-)}
+
 
 
       <ResourceModal
@@ -328,6 +322,8 @@ useEffect(() => {
         setActiveModal={setActiveModal}
         recipient={recipient}
         currentUser={currentUser}
+        recipientSkills={recipient?.skills || []}
+        userSkills={currentUser?.skills || []}
       />
     </div>
   );
