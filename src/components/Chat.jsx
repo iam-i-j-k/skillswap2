@@ -153,7 +153,7 @@ useEffect(() => {
 
   const handleDelete = (messageId) => {
     if (window.confirm("Delete this message?")) {
-      socket.emit("deleteMessage", { messageId }) // userId is not required by backend
+      socket.emit("deleteMessage", { messageId }) 
     }
   }
 
@@ -213,21 +213,10 @@ useEffect(() => {
     }
   };
 
-  useEffect(() => {
-  if (!socket) return;
-  const handleTestResponse = (data) => {
-    alert("Test event response: " + JSON.stringify(data));
-  };
-  socket.on("testResponse", handleTestResponse);
-  return () => {
-    socket.off("testResponse", handleTestResponse);
-  };
-}, [socket]);
 
   useEffect(() => {
     if (!socket) return;
     socket.on("chatCleared", ({ chatUserId: clearedId, userId: clearedUserId }) => {
-      // If this chat is between these two users, clear
       if (
         (chatUserId === clearedId && currentUser._id === clearedUserId) ||
         (chatUserId === clearedUserId && currentUser._id === clearedId)

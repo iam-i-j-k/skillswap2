@@ -132,7 +132,7 @@ const Message = ({
           <button
           aria-label="Delete Message"
             onClick={(e) => {
-              // e.stopPropagation();
+              e.stopPropagation();
               onDelete(msg._id);
             }}
             className="text-red-500"

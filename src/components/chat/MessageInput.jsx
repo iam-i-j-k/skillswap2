@@ -30,22 +30,17 @@ const MessageInput = ({
     <div className="flex gap-2 mb-4">
       <input
         className="border px-3 py-2 rounded w-full"
-        placeholder={editing ? "Edit message..." : "Type your message..."}
-        value={editing ? editText : input}
-        onChange={editing ? (e) => setEditText(e.target.value) : onInputChange}
+        placeholder={"Type your message..."}
+        value={input}
+        onChange={onInputChange}
       />
       <button
-        onClick={editing ? () => {
-          setEditing(false);
-          setEditText('');
-          setSelectedMessageId(null);
-        } : handleSend}
-        className={`px-4 py-2 rounded ${
-          editing ? "bg-gray-600 text-white" : "bg-blue-600 text-white"
+        onClick={handleSend}
+        className={`px-4 py-2 rounded ${"bg-blue-600 text-white"
         }`}
-        disabled={editing ? !editText.trim() : (!input.trim() || !handleSendMessage)}
+        disabled={(!input.trim() || !handleSendMessage)}
       >
-        {editing ? "Cancel" : "Send"}
+        Send
       </button>
     </div>
   );
