@@ -1,61 +1,55 @@
-import React from "react";
-import EmojiPicker from "./EmojiPicker";
+import React from "react"
+import EmojiPicker from "./EmojiPicker"
+import { FileText, Repeat, Calendar, Trash2 } from "lucide-react"
 
-
-const ChatActions = ({ 
-  setActiveModal, 
-  openCalendly, 
-  showEmoji, 
-  setShowEmoji,
-  handleClearChat,
-  input,
-  setInput,
-}) => {
+const ChatActions = ({ setActiveModal, openCalendly, showEmoji, setShowEmoji, handleClearChat, input, setInput }) => {
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex flex-wrap gap-3">
       <button
         onClick={() => setActiveModal("resource")}
-        className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-2xl transition-all duration-200 border border-blue-500/30"
       >
-        📁 Send Resource
+        <FileText className="w-4 h-4" />
+        <span className="text-sm font-medium">Send Resource</span>
       </button>
+
       <button
         onClick={() => setActiveModal("swap")}
-        className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-2xl transition-all duration-200 border border-purple-500/30"
       >
-        🤝 Propose Swap
+        <Repeat className="w-4 h-4" />
+        <span className="text-sm font-medium">Propose Swap</span>
       </button>
+
       <button
         onClick={openCalendly}
-        className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded text-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded-2xl transition-all duration-200 border border-green-500/30"
       >
-        📅 Schedule Call
+        <Calendar className="w-4 h-4" />
+        <span className="text-sm font-medium">Schedule Call</span>
       </button>
-      <button 
-        onClick={() => setShowEmoji(!showEmoji)} 
-        className="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-3 py-1 rounded text-sm"
-      >
-        😊
-      </button>
-      <button 
+
+      <button
         onClick={handleClearChat}
-        className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-2xl transition-all duration-200 border border-red-500/30"
       >
-        🗑️ Clear Chat
+        <Trash2 className="w-4 h-4" />
+        <span className="text-sm font-medium">Clear Chat</span>
       </button>
+
       {showEmoji && (
         <EmojiPicker
           showEmoji={showEmoji}
           input={input}
           setInput={setInput}
           onSelectEmoji={(emoji) => {
-            setInput(input + emoji);
-            setShowEmoji(false);
+            setInput(input + emoji)
+            setShowEmoji(false)
           }}
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ChatActions;
+export default ChatActions

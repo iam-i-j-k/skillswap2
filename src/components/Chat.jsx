@@ -1,6 +1,6 @@
 import React,{ useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { useSocket } from "../context/SocketContext"
 import axios from "axios"
 import MessageList from "./chat/MessageList"
@@ -9,6 +9,7 @@ import ChatActions from "./chat/ChatActions"
 import EmojiPicker from "./chat/EmojiPicker"
 import SwapModal from "./chat/SwapModal"
 import ResourceModal from "./chat/ResourceModal"
+import { ArrowLeft, Phone, Video, MoreVertical } from "lucide-react"
 
 const Chat = () => {
   const { id: chatUserId } = useParams()
@@ -25,13 +26,10 @@ const Chat = () => {
   const [selectedMessageId, setSelectedMessageId] = useState(null)
   const typingTimeout = useRef()
   const socket = useSocket()
+  const navigate = useNavigate()
   const calendlyLink = "https://calendly.com/irfanjankhan7860"
 
-
   useEffect(() => {
-    if (!socket) return <div>Connecting to chat server...</div>;
-
-
     socket.on("receiveMessage", (message) => {
       setMessages((prev) => [...prev, message])
       if (message.text && message.sender === chatUserId) {
@@ -77,30 +75,29 @@ const Chat = () => {
     }
   }, [socket, currentUser._id, chatUserId])
 
-useEffect(() => {
-  const fetchChat = async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/history/${chatUserId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setMessages(res.data.messages);
-      setRecipient(res.data.recipient);
-      if (socket) {
-        socket.emit("markAsDelivered", {
-          userId: currentUser._id,
-          chatUserId,
-        });
+  useEffect(() => {
+    const fetchChat = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/history/${chatUserId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        )
+        setMessages(res.data.messages)
+        setRecipient(res.data.recipient)
+        if (socket) {
+          socket.emit("markAsDelivered", {
+            userId: currentUser._id,
+            chatUserId,
+          })
+        }
+      } catch (err) {
+        console.error("Failed to load chat", err)
       }
-    } catch (err) {
-      console.error("Failed to load chat", err);
     }
-  };
-  if (socket) {
-    fetchChat();
-  }
-}, [chatUserId, token, socket]);
-
+    if (socket) {
+      fetchChat()
+    }
+  }, [chatUserId, token, socket])
 
   useEffect(() => {
     const handleClickOutside = () => setSelectedMessageId(null)
@@ -108,11 +105,10 @@ useEffect(() => {
     return () => document.removeEventListener("click", handleClickOutside)
   }, [])
 
-useEffect(() => {
-  if (socket && currentUser?._id) {
-    socket.emit("join-connection-rooms", currentUser._id);
-  }
-
+  useEffect(() => {
+    if (socket && currentUser?._id) {
+      socket.emit("join-connection-rooms", currentUser._id)
+    }
 
     if (socket && chatUserId && currentUser?._id) {
       const seenTimeout = setTimeout(() => {
@@ -126,14 +122,14 @@ useEffect(() => {
   }, [socket, chatUserId, currentUser?._id, messages.length])
 
   const sendMessage = (text) => {
-    if (!text.trim() || !socket) return;
+    if (!text.trim() || !socket) return
     const messageObj = {
       sender: currentUser._id,
       recipient: chatUserId,
       text,
-    };
-    socket.emit("sendMessage", messageObj);
-    setInput("");
+    }
+    socket.emit("sendMessage", messageObj)
+    setInput("")
   }
 
   const handleInputChange = (e) => {
@@ -153,7 +149,7 @@ useEffect(() => {
 
   const handleDelete = (messageId) => {
     if (window.confirm("Delete this message?")) {
-      socket.emit("deleteMessage", { messageId }) 
+      socket.emit("deleteMessage", { messageId })
     }
   }
 
@@ -169,14 +165,11 @@ useEffect(() => {
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === messageId
-  ? {
-      ...msg,
-      reactions: [
-        ...(msg.reactions || []),
-        { userId, emoji }
-      ],
-    }
-  : msg,
+            ? {
+                ...msg,
+                reactions: [...(msg.reactions || []), { userId, emoji }],
+              }
+            : msg,
         ),
       )
     })
@@ -184,13 +177,7 @@ useEffect(() => {
       setMessages((prev) => prev.filter((msg) => msg._id !== messageId))
     })
     socket.on("messageEdited", ({ message }) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === message._id
-            ? { ...msg, ...message }
-            : msg
-        )
-      )
+      setMessages((prev) => prev.map((msg) => (msg._id === message._id ? { ...msg, ...message } : msg)))
     })
     return () => {
       socket.off("messageReacted")
@@ -204,101 +191,153 @@ useEffect(() => {
   }
 
   const handleClearChat = () => {
-    if (!socket || !currentUser?._id || !chatUserId) return;
+    if (!socket || !currentUser?._id || !chatUserId) return
     if (window.confirm("Are you sure you want to clear this chat?")) {
       socket.emit("clearChat", {
         userId: currentUser._id,
-        chatUserId
-      });
+        chatUserId,
+      })
     }
-  };
-
+  }
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket) return
     socket.on("chatCleared", ({ chatUserId: clearedId, userId: clearedUserId }) => {
       if (
         (chatUserId === clearedId && currentUser._id === clearedUserId) ||
         (chatUserId === clearedUserId && currentUser._id === clearedId)
       ) {
-        setMessages([]);
+        setMessages([])
       }
-    });
+    })
     return () => {
-      socket.off("chatCleared");
-    };
-  }, [socket, chatUserId, currentUser?._id]);
+      socket.off("chatCleared")
+    }
+  }, [socket, chatUserId, currentUser?._id])
 
   useEffect(() => {
-    if (!socket || !currentUser?._id) return;
+    if (!socket || !currentUser?._id) return
     socket.emit("join-connection-rooms", currentUser._id)
-  }, [socket, currentUser._id, chatUserId])
+  }, [socket, currentUser?._id, chatUserId])
 
   if (!chatUserId) return <div>No user selected for chat.</div>
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4">Chat with {recipient?.username || "User"}</h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
 
-      <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-hidden">
-          <MessageList
-            messages={messages}
-            currentUser={currentUser}
-            selectedMessageId={selectedMessageId}
-            setSelectedMessageId={setSelectedMessageId}
-            handleReact={handleReact}
-            handleDelete={handleDelete}
-            handleEdit={handleEdit}
-            editing={editing}
-            setEditing={setEditing}
-            editText={editText}
-            setEditText={setEditText}
-            isTyping={isTyping}
-            recipient={recipient}
-          />
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Chat Header */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 mb-6 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/matches')}
+                className="p-2 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                    {recipient?.username?.charAt(0) || "U"}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-bold text-white">{recipient?.username || "User"}</h2>
+                  <p className="text-slate-400 text-sm">
+                    {isTyping ? "typing..." : "online"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white">
+                <Phone className="w-5 h-5" />
+              </button>
+              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white">
+                <Video className="w-5 h-5" />
+              </button>
+              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white">
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <div className="flex justify-between items-center mb-4">
-          <ChatActions
-            setActiveModal={setActiveModal}
-            openCalendly={openCalendly}
-            showEmoji={showEmoji}
-            setShowEmoji={setShowEmoji}
-            handleClearChat={handleClearChat}
-          />
+
+        {/* Chat Container */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
+          {/* Messages Area */}
+          <div className="p-6">
+            <MessageList
+              messages={messages}
+              currentUser={currentUser}
+              selectedMessageId={selectedMessageId}
+              setSelectedMessageId={setSelectedMessageId}
+              handleReact={handleReact}
+              handleDelete={handleDelete}
+              handleEdit={handleEdit}
+              editing={editing}
+              setEditing={setEditing}
+              editText={editText}
+              setEditText={setEditText}
+              isTyping={isTyping}
+              recipient={recipient}
+            />
+          </div>
+
+          {/* Chat Actions */}
+          <div className="px-6 py-4 border-t border-white/10">
+            <ChatActions
+              setActiveModal={setActiveModal}
+              openCalendly={openCalendly}
+              showEmoji={showEmoji}
+              setShowEmoji={setShowEmoji}
+              handleClearChat={handleClearChat}
+            />
+          </div>
+
+          {/* Message Input */}
+          <div className="p-6 pt-0">
+            <MessageInput
+              input={input}
+              setInput={setInput}
+              handleSendMessage={sendMessage}
+              isTyping={isTyping}
+              setIsTyping={setIsTyping}
+              showEmoji={showEmoji}
+              setShowEmoji={setShowEmoji}
+              editing={editing}
+              setEditing={setEditing}
+              editText={editText}
+              setEditText={setEditText}
+              selectedMessageId={selectedMessageId}
+              setSelectedMessageId={setSelectedMessageId}
+              onInputChange={handleInputChange}
+              socket={socket}
+              chatUserId={chatUserId}
+            />
+
+            {showEmoji && (
+              <div className="mt-4">
+                <EmojiPicker
+                  onSelectEmoji={(emoji) => {
+                    setInput(input + emoji);
+                    setShowEmoji(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
-        <MessageInput
-          input={input}
-          setInput={setInput}
-          handleSendMessage={sendMessage}
-          isTyping={isTyping}
-          setIsTyping={setIsTyping}
-          showEmoji={showEmoji}
-          setShowEmoji={setShowEmoji}
-          editing={editing}
-          setEditing={setEditing}
-          editText={editText}
-          setEditText={setEditText}
-          selectedMessageId={selectedMessageId}
-          setSelectedMessageId={setSelectedMessageId}
-          onInputChange={handleInputChange}
-          socket={socket}
-          chatUserId={chatUserId}
-        />
-        {showEmoji && (
-          <EmojiPicker
-            onSelectEmoji={(emoji) => {
-              setInput(input + emoji);
-              setShowEmoji(false);
-            }}
-          />
-        )}
       </div>
 
-
-
-
+      {/* Modals */}
       <ResourceModal
         activeModal={activeModal}
         setActiveModal={setActiveModal}
@@ -315,7 +354,7 @@ useEffect(() => {
         userSkills={currentUser?.skills || []}
       />
     </div>
-  );
-};
+  )
+}
 
 export default Chat

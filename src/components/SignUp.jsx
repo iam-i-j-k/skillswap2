@@ -1,48 +1,138 @@
-import React, { useState } from "react"
+"use client"
+
+import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
-import { X, Check, ChevronDown, Loader2 } from "lucide-react"
+import { X, Check, ChevronDown, Loader2, Eye, EyeOff, Sparkles, Plus } from "lucide-react"
 
 const PREDEFINED_SKILLS = [
-// Programming & Development
-"JavaScript", "TypeScript", "React.js", "Next.js", "Vue.js", "Angular", "Node.js",
-"Express.js", "Python", "Django", "Flask", "Java", "Spring Boot", "Kotlin", "Swift",
-"C", "C++", "C#", ".NET", "PHP", "Laravel", "Ruby", "Ruby on Rails", "Go (Golang)",
-"Rust", "GraphQL", "REST APIs", "WebSockets", "HTML", "CSS", "Tailwind CSS",
-"Bootstrap", "Sass", "Material UI",
+  // Programming & Development
+  "JavaScript",
+  "TypeScript",
+  "React.js",
+  "Next.js",
+  "Vue.js",
+  "Angular",
+  "Node.js",
+  "Express.js",
+  "Python",
+  "Django",
+  "Flask",
+  "Java",
+  "Spring Boot",
+  "Kotlin",
+  "Swift",
+  "C",
+  "C++",
+  "C#",
+  ".NET",
+  "PHP",
+  "Laravel",
+  "Ruby",
+  "Ruby on Rails",
+  "Go (Golang)",
+  "Rust",
+  "GraphQL",
+  "REST APIs",
+  "WebSockets",
+  "HTML",
+  "CSS",
+  "Tailwind CSS",
+  "Bootstrap",
+  "Sass",
+  "Material UI",
 
-// DevOps & Cloud
-"Docker", "Kubernetes", "CI/CD Pipelines", "GitHub Actions", "GitLab CI/CD",
-"Jenkins", "AWS", "AWS Lambda", "Azure", "Google Cloud Platform (GCP)",
-"Firebase", "Terraform", "Ansible", "Linux Administration", "Bash Scripting",
-"Nginx", "Apache",
+  // DevOps & Cloud
+  "Docker",
+  "Kubernetes",
+  "CI/CD Pipelines",
+  "GitHub Actions",
+  "GitLab CI/CD",
+  "Jenkins",
+  "AWS",
+  "AWS Lambda",
+  "Azure",
+  "Google Cloud Platform (GCP)",
+  "Firebase",
+  "Terraform",
+  "Ansible",
+  "Linux Administration",
+  "Bash Scripting",
+  "Nginx",
+  "Apache",
 
-// Data Science & AI
-"Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-Learn",
-"NumPy", "Pandas", "Matplotlib", "Seaborn", "OpenCV", "Natural Language Processing (NLP)",
-"Computer Vision", "Big Data", "Apache Spark", "Hadoop", "SQL", "NoSQL",
-"MongoDB", "PostgreSQL", "MySQL", "Redis",
+  // Data Science & AI
+  "Machine Learning",
+  "Deep Learning",
+  "TensorFlow",
+  "PyTorch",
+  "Scikit-Learn",
+  "NumPy",
+  "Pandas",
+  "Matplotlib",
+  "Seaborn",
+  "OpenCV",
+  "Natural Language Processing (NLP)",
+  "Computer Vision",
+  "Big Data",
+  "Apache Spark",
+  "Hadoop",
+  "SQL",
+  "NoSQL",
+  "MongoDB",
+  "PostgreSQL",
+  "MySQL",
+  "Redis",
 
-// UI/UX & Design
-"Figma", "Adobe XD", "Sketch", "Photoshop", "Illustrator", "UI/UX Principles",
-"Wireframing", "Prototyping", "Responsive Design", "Accessibility (WCAG)",
+  // UI/UX & Design
+  "Figma",
+  "Adobe XD",
+  "Sketch",
+  "Photoshop",
+  "Illustrator",
+  "UI/UX Principles",
+  "Wireframing",
+  "Prototyping",
+  "Responsive Design",
+  "Accessibility (WCAG)",
 
-// Mobile Development
-"Android Development", "iOS Development", "Flutter", "React Native",
-"SwiftUI", "Jetpack Compose",
+  // Mobile Development
+  "Android Development",
+  "iOS Development",
+  "Flutter",
+  "React Native",
+  "SwiftUI",
+  "Jetpack Compose",
 
-// Cybersecurity
-"Ethical Hacking", "Penetration Testing", "Network Security", "Cryptography",
-"OWASP Top 10", "Security Best Practices", "ISO 27001",
+  // Cybersecurity
+  "Ethical Hacking",
+  "Penetration Testing",
+  "Network Security",
+  "Cryptography",
+  "OWASP Top 10",
+  "Security Best Practices",
+  "ISO 27001",
 
-// Mathematics & Algorithms
-"Data Structures & Algorithms", "Competitive Programming", "Discrete Mathematics",
-"Linear Algebra", "Probability & Statistics",
+  // Mathematics & Algorithms
+  "Data Structures & Algorithms",
+  "Competitive Programming",
+  "Discrete Mathematics",
+  "Linear Algebra",
+  "Probability & Statistics",
 
-// Business & Soft Skills
-"Agile Methodology", "Scrum", "Kanban", "Project Management",
-"Communication Skills", "Leadership", "Team Collaboration", "Time Management",
-"Problem-Solving", "Critical Thinking", "Creativity", "Adaptability",
+  // Business & Soft Skills
+  "Agile Methodology",
+  "Scrum",
+  "Kanban",
+  "Project Management",
+  "Communication Skills",
+  "Leadership",
+  "Team Collaboration",
+  "Time Management",
+  "Problem-Solving",
+  "Critical Thinking",
+  "Creativity",
+  "Adaptability",
 ]
 
 const SignUp = () => {
@@ -58,6 +148,8 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false)
   const [customSkill, setCustomSkill] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -123,184 +215,211 @@ const SignUp = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">Create Account</h2>
-          <p className="mt-2 text-gray-600">Join our community and connect with others</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+      
+      <div className="relative max-w-lg mx-auto">
+        {/* Logo Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
+            <Sparkles className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Join SkillSwap</h1>
+          <p className="text-slate-400">Create your account and start connecting</p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-purple-100">
+        {/* Signup Card */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
-              <X className="w-4 h-4" />
-              {error}
+            <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-400">
+              <X className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm">{error}</p>
             </div>
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-6">
-              {/* Username Input */}
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                  placeholder="JohnDoe"
-                />
-              </div>
+            {/* Username Input */}
+            <div className="space-y-2">
+              <label htmlFor="username" className="block text-sm font-medium text-slate-200">
+                Username
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                className="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                placeholder="JohnDoe"
+              />
+            </div>
 
-              {/* Email Input */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                  placeholder="you@example.com"
-                />
-              </div>
+            {/* Email Input */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-200">
+                Email Address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                placeholder="you@example.com"
+              />
+            </div>
 
-              {/* Password Input */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
+            {/* Password Input */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-200">
+                Password
+              </label>
+              <div className="relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  className="block w-full px-4 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
+            </div>
 
-              {/* Confirm Password Input */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
+            {/* Confirm Password Input */}
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-200">
+                Confirm Password
+              </label>
+              <div className="relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  className="block w-full px-4 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-300 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
+            </div>
 
-              {/* Skills Selection */}
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+            {/* Skills Selection */}
+            <div className="relative space-y-2">
+              <label className="block text-sm font-medium text-slate-200">Skills</label>
 
-                {/* Selected Skills */}
-                <div className="flex flex-wrap gap-2 mb-2">
+              {/* Selected Skills */}
+              {formData.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
                   {formData.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30"
                     >
                       {skill}
-                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500">
+                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-400 transition-colors">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
                   ))}
                 </div>
+              )}
 
-                {/* Skills Dropdown Trigger */}
-                <button
-                  type="button"
-                  onClick={() => setShowSkillsDropdown(!showSkillsDropdown)}
-                  className="w-full px-3 cursor-pointer py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors flex items-center justify-between"
-                >
-                  <span className="text-gray-500">Select or add skills...</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
+              {/* Skills Dropdown Trigger */}
+              <button
+                type="button"
+                onClick={() => setShowSkillsDropdown(!showSkillsDropdown)}
+                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm flex items-center justify-between"
+              >
+                <span>Select or add skills...</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showSkillsDropdown ? 'rotate-180' : ''}`} />
+              </button>
 
-                {/* Skills Dropdown */}
-                {showSkillsDropdown && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
-                    <div className="p-2">
-                      <div className="flex gap-2 mb-2">
-                        <input
-                          type="text"
-                          value={customSkill}
-                          onChange={(e) => setCustomSkill(e.target.value)}
-                          placeholder="Add custom skill..."
-                          className="flex-1 px-2 py-1 border border-gray-300 rounded-md text-sm"
-                        />
+              {/* Skills Dropdown */}
+              {showSkillsDropdown && (
+                <div className="absolute z-10 mt-2 w-full bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl">
+                  <div className="p-4">
+                    <div className="flex gap-2 mb-4">
+                      <input
+                        type="text"
+                        value={customSkill}
+                        onChange={(e) => setCustomSkill(e.target.value)}
+                        placeholder="Add custom skill..."
+                        className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomSkill}
+                        className="px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-sm hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center gap-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add
+                      </button>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto space-y-1">
+                      {PREDEFINED_SKILLS.map((skill) => (
                         <button
+                          key={skill}
                           type="button"
-                          onClick={addCustomSkill}
-                          className="px-2 py-1 cursor-pointer bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700 transition-colors"
+                          onClick={() => toggleSkill(skill)}
+                          className="w-full text-left px-3 py-2 hover:bg-white/10 rounded-xl text-sm text-slate-300 flex items-center justify-between transition-colors"
                         >
-                          Add
+                          {skill}
+                          {formData.skills.includes(skill) && <Check className="w-4 h-4 text-purple-400" />}
                         </button>
-                      </div>
-                      <div className="max-h-48 overflow-y-auto">
-                        {PREDEFINED_SKILLS.map((skill) => (
-                          <button
-                            key={skill}
-                            type="button"
-                            onClick={() => toggleSkill(skill)}
-                            className="w-full cursor-pointer text-left px-3 py-2 hover:bg-purple-50 rounded-md text-sm flex items-center justify-between"
-                          >
-                            {skill}
-                            {formData.skills.includes(skill) && <Check className="w-4 h-4 text-purple-600" />}
-                          </button>
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
 
-              {/* Bio Input */}
-              <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                  Bio
-                </label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  required
-                  value={formData.bio}
-                  onChange={handleChange}
-                  rows={3}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
+            {/* Bio Input */}
+            <div className="space-y-2">
+              <label htmlFor="bio" className="block text-sm font-medium text-slate-200">
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                required
+                value={formData.bio}
+                onChange={handleChange}
+                rows={3}
+                className="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm resize-none"
+                placeholder="Tell us about yourself..."
+              />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full cursor-pointer flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center px-4 py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   Creating account...
                 </>
               ) : (
@@ -310,11 +429,14 @@ const SignUp = () => {
           </form>
         </div>
 
-        <div className="text-center text-sm">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-purple-600 hover:text-purple-500 transition-colors">
-            Sign in
-          </Link>
+        {/* Sign In Link */}
+        <div className="mt-8 text-center">
+          <p className="text-slate-400">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-purple-400 hover:text-purple-300 transition-colors">
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
     </div>
@@ -322,4 +444,3 @@ const SignUp = () => {
 }
 
 export default SignUp
-
