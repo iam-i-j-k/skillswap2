@@ -130,21 +130,25 @@ const Message = ({
 
             {/* Reaction Picker */}
             {isSelected && (
-              <div className="absolute z-50 top-full mt-2 right-0">
-                <div className="bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl">
+              <div className="absolute z-50 top-full mt-2 right-0 w-[280px] sm:w-[320px]">
+                <div className="bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl max-h-[350px] overflow-hidden">
                   <Picker
                     data={data}
                     onEmojiSelect={(emoji) => {
                       onReact(msg._id, emoji.native)
                       onMessageClick(null)
                     }}
-                    theme="dark"
                     previewPosition="none"
                     skinTonePosition="none"
+                    theme="dark"
+                    perLine={7} // Adjusts number of emojis per row
+                    maxFrequentRows={1} // Optional: keeps frequent emojis compact
+                    navPosition="top"
                   />
                 </div>
               </div>
             )}
+
           </div>
 
           {/* Edit Input */}

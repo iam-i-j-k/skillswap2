@@ -299,6 +299,8 @@ const Chat = () => {
               showEmoji={showEmoji}
               setShowEmoji={setShowEmoji}
               handleClearChat={handleClearChat}
+              input={input}
+              setInput={setInput}
             />
           </div>
 
@@ -326,9 +328,12 @@ const Chat = () => {
             {showEmoji && (
               <div className="mt-4">
                 <EmojiPicker
+                  showEmoji={showEmoji}
+                  input={input}
+                  setInput={setInput}
                   onSelectEmoji={(emoji) => {
-                    setInput(input + emoji);
-                    setShowEmoji(false);
+                    setInput(input + emoji)
+                    setShowEmoji(false)
                   }}
                 />
               </div>

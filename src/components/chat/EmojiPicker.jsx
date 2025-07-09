@@ -6,17 +6,32 @@ const EmojiPicker = ({ showEmoji, input, setInput, onSelectEmoji }) => {
   if (!showEmoji) return null;
 
   return (
-    <div className="absolute z-50">
-      <Picker 
-        data={data} 
+    <div
+      className="
+        fixed bottom-24 right-8 z-50
+        max-w-full
+        max-h-[400px] sm:max-h-[420px]
+        bg-white rounded-2xl shadow-2xl border border-gray-200
+        overflow-hidden
+        animate-fade-in
+      "
+      style={{
+        boxSizing: "border-box",
+      }}
+    >
+      <Picker
+        data={data}
         onEmojiSelect={(emoji) => {
-          if (onSelectEmoji){
+          if (onSelectEmoji) {
             onSelectEmoji(emoji.native);
-          }
-          else{
+          } else {
             setInput(input + emoji.native);
           }
-        }} 
+        }}
+        previewPosition="none"
+        skinTonePosition="none"
+        perLine={8}
+        maxFrequentRows={1}
       />
     </div>
   );

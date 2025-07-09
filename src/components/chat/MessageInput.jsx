@@ -53,7 +53,7 @@ const MessageInput = ({
 
         <button
           onClick={() => setShowEmoji(!showEmoji)}
-          className="absolute right-3 bottom-3 p-1 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-yellow-400"
+          className="absolute right-3 bottom-4 p-1 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-yellow-400"
         >
           <Smile className="w-5 h-5" />
         </button>
