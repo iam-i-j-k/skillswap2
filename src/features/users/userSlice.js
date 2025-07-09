@@ -5,7 +5,7 @@ import axios from 'axios';
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (_, { getState, rejectWithValue }) => {
-    try {
+    try {      
       const token = getState().auth.token;
 
       const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users`, {

@@ -1,6 +1,5 @@
-"use client"
 
-import { useState } from "react"
+import React,{ useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
 import { X, Check, ChevronDown, Loader2, Eye, EyeOff, Sparkles, Plus } from "lucide-react"
@@ -215,24 +214,24 @@ const SignUp = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
       
       <div className="relative max-w-lg mx-auto">
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-xl">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Join SkillSwap</h1>
-          <p className="text-slate-400">Create your account and start connecting</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Join SkillSwap</h1>
+          <p className="text-gray-600 dark:text-gray-400">Create your account and start connecting</p>
         </div>
 
         {/* Signup Card */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-white dark:bg-slate-800 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
           {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-400">
+            <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center gap-3 text-red-600 dark:text-red-400">
               <X className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">{error}</p>
             </div>
@@ -241,7 +240,7 @@ const SignUp = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Username Input */}
             <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Username
               </label>
               <input
@@ -251,14 +250,14 @@ const SignUp = () => {
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 placeholder="JohnDoe"
               />
             </div>
 
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
               <input
@@ -268,14 +267,14 @@ const SignUp = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                 placeholder="you@example.com"
               />
             </div>
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <div className="relative">
@@ -286,13 +285,13 @@ const SignUp = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full px-4 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                  className="block w-full px-4 pr-12 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -301,7 +300,7 @@ const SignUp = () => {
 
             {/* Confirm Password Input */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Confirm Password
               </label>
               <div className="relative">
@@ -312,13 +311,13 @@ const SignUp = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full px-4 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+                  className="block w-full px-4 pr-12 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -327,7 +326,7 @@ const SignUp = () => {
 
             {/* Skills Selection */}
             <div className="relative space-y-2">
-              <label className="block text-sm font-medium text-slate-200">Skills</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Skills</label>
 
               {/* Selected Skills */}
               {formData.skills.length > 0 && (
@@ -335,10 +334,10 @@ const SignUp = () => {
                   {formData.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-full text-sm border border-purple-200 dark:border-purple-500/30"
                     >
                       {skill}
-                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-400 transition-colors">
+                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500 transition-colors">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -350,7 +349,7 @@ const SignUp = () => {
               <button
                 type="button"
                 onClick={() => setShowSkillsDropdown(!showSkillsDropdown)}
-                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm flex items-center justify-between"
+                className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-500 dark:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 flex items-center justify-between"
               >
                 <span>Select or add skills...</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${showSkillsDropdown ? 'rotate-180' : ''}`} />
@@ -358,7 +357,7 @@ const SignUp = () => {
 
               {/* Skills Dropdown */}
               {showSkillsDropdown && (
-                <div className="absolute z-10 mt-2 w-full bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl">
+                <div className="absolute z-10 mt-2 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl">
                   <div className="p-4">
                     <div className="flex gap-2 mb-4">
                       <input
@@ -366,7 +365,7 @@ const SignUp = () => {
                         value={customSkill}
                         onChange={(e) => setCustomSkill(e.target.value)}
                         placeholder="Add custom skill..."
-                        className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                       <button
                         type="button"
@@ -383,10 +382,10 @@ const SignUp = () => {
                           key={skill}
                           type="button"
                           onClick={() => toggleSkill(skill)}
-                          className="w-full text-left px-3 py-2 hover:bg-white/10 rounded-xl text-sm text-slate-300 flex items-center justify-between transition-colors"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl text-sm text-gray-700 dark:text-gray-300 flex items-center justify-between transition-colors"
                         >
                           {skill}
-                          {formData.skills.includes(skill) && <Check className="w-4 h-4 text-purple-400" />}
+                          {formData.skills.includes(skill) && <Check className="w-4 h-4 text-purple-500" />}
                         </button>
                       ))}
                     </div>
@@ -397,7 +396,7 @@ const SignUp = () => {
 
             {/* Bio Input */}
             <div className="space-y-2">
-              <label htmlFor="bio" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Bio
               </label>
               <textarea
@@ -407,7 +406,7 @@ const SignUp = () => {
                 value={formData.bio}
                 onChange={handleChange}
                 rows={3}
-                className="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm resize-none"
+                className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
                 placeholder="Tell us about yourself..."
               />
             </div>
@@ -431,9 +430,9 @@ const SignUp = () => {
 
         {/* Sign In Link */}
         <div className="mt-8 text-center">
-          <p className="text-slate-400">
+          <p className="text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-purple-400 hover:text-purple-300 transition-colors">
+            <Link to="/login" className="font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors">
               Sign In
             </Link>
           </p>

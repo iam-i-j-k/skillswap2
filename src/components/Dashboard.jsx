@@ -1,9 +1,23 @@
 import React,{ useEffect, useState } from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import { Users, Video, MessageSquare, Calendar, X, Plus, Edit2, Save, TrendingUp, Clock } from "lucide-react"
+import {
+  Users,
+  Video,
+  MessageSquare,
+  Calendar,
+  X,
+  Plus,
+  Edit2,
+  Save,
+  TrendingUp,
+  Clock,
+  Activity,
+  Award,
+  Target,
+} from "lucide-react"
 
-const StatsCard = ({ icon: Icon, title, value, trend, color = "purple" }) => {
+const StatsCard = ({ icon: Icon, title, value, trend, color = "purple", description }) => {
   const colorClasses = {
     purple: "from-purple-500 to-purple-600",
     blue: "from-blue-500 to-blue-600",
@@ -12,23 +26,22 @@ const StatsCard = ({ icon: Icon, title, value, trend, color = "purple" }) => {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all duration-300 group">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className={`p-3 rounded-2xl bg-gradient-to-r ${colorClasses[color]} shadow-lg`}>
-            <Icon className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <p className="text-slate-400 text-sm font-medium">{title}</p>
-            <p className="text-2xl font-bold text-white">{value}</p>
-          </div>
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 hover:shadow-lg transition-all duration-300 group">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-2xl bg-gradient-to-r ${colorClasses[color]} shadow-lg`}>
+          <Icon className="h-6 w-6 text-white" />
         </div>
         {trend && (
-          <div className="flex items-center text-green-400 text-sm">
+          <div className="flex items-center text-green-500 text-sm font-medium">
             <TrendingUp className="w-4 h-4 mr-1" />
             {trend}
           </div>
         )}
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
+        {description && <p className="text-xs text-gray-500 dark:text-gray-500">{description}</p>}
       </div>
     </div>
   )
@@ -36,9 +49,10 @@ const StatsCard = ({ icon: Icon, title, value, trend, color = "purple" }) => {
 
 const SkillBadge = ({ skill, onRemove, variant = "default" }) => {
   const variants = {
-    default: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    default:
+      "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30",
     removable:
-      "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30",
+      "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-300 hover:border-red-200 dark:hover:border-red-500/30",
   }
 
   return (
@@ -47,7 +61,7 @@ const SkillBadge = ({ skill, onRemove, variant = "default" }) => {
     >
       {skill}
       {onRemove && (
-        <button onClick={() => onRemove(skill)} className="hover:text-red-400 transition-colors">
+        <button onClick={() => onRemove(skill)} className="hover:text-red-500 transition-colors">
           <X className="w-3 h-3" />
         </button>
       )}
@@ -211,10 +225,13 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Profile</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -228,27 +245,27 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
           className="space-y-6"
         >
           <div>
-            <label className="block text-sm font-medium text-slate-200 mb-2">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
             <input
               type="text"
               value={editedProfile.username}
               onChange={(e) => setEditedProfile({ ...editedProfile, username: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-200 mb-2">Bio</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bio</label>
             <textarea
               value={editedProfile.bio}
               onChange={(e) => setEditedProfile({ ...editedProfile, bio: e.target.value })}
               rows={3}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-200 mb-2">Skills</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</label>
             <div className="flex flex-wrap gap-2 mb-3">
               {editedProfile.skills.map((skill) => (
                 <SkillBadge key={skill} skill={skill} onRemove={handleRemoveSkill} variant="removable" />
@@ -258,11 +275,11 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
               <select
                 value={selectedSkill}
                 onChange={(e) => setSelectedSkill(e.target.value)}
-                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                className="flex-1 px-4 py-3 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="">Select a skill</option>
                 {skillOptions.map((skill) => (
-                  <option key={skill} value={skill} className="bg-slate-800">
+                  <option key={skill} value={skill} className="bg-white dark:bg-slate-800">
                     {skill}
                   </option>
                 ))}
@@ -281,7 +298,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 border border-white/20 text-slate-300 rounded-2xl hover:bg-white/5 transition-all duration-200"
+              className="px-6 py-3 border border-gray-300 dark:border-white/20 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
             >
               Cancel
             </button>
@@ -376,6 +393,7 @@ const Dashboard = () => {
       value: stats.totalConnections,
       trend: "+12%",
       color: "purple",
+      description: "Active network members",
     },
     {
       icon: Video,
@@ -383,6 +401,7 @@ const Dashboard = () => {
       value: stats.videoCalls,
       trend: "+8%",
       color: "blue",
+      description: "Sessions completed",
     },
     {
       icon: MessageSquare,
@@ -390,6 +409,7 @@ const Dashboard = () => {
       value: stats.messagesSent,
       trend: "+24%",
       color: "green",
+      description: "Conversations started",
     },
     {
       icon: Calendar,
@@ -397,32 +417,30 @@ const Dashboard = () => {
       value: stats.scheduledCalls,
       trend: "+5%",
       color: "orange",
+      description: "Upcoming meetings",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
-      
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Welcome Section */}
-      <div className="relative">
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg border border-white/30">
                   {profile.username?.charAt(0) || username?.charAt(0) || "U"}
                 </div>
                 <div>
                   <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">
                     {greeting}, {profile.username || username} 👋
                   </h1>
-                  <p className="text-slate-400 text-lg">Ready to connect and learn something new today?</p>
+                  <p className="text-purple-100 text-lg">Ready to connect and learn something new today?</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setIsProfileModalOpen(true)}
@@ -433,19 +451,19 @@ const Dashboard = () => {
               </button>
               <Link
                 to="/home"
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-2xl hover:bg-gray-100 transition-all duration-200 shadow-lg font-medium"
               >
                 <Users className="w-4 h-4" />
                 Connect with People
               </Link>
               <button
                 onClick={() => {
-                  localStorage.removeItem("user");
-                  localStorage.removeItem("userProfile");
-                  localStorage.removeItem("token");
-                  window.location.href = "/login";
+                  localStorage.removeItem("user")
+                  localStorage.removeItem("userProfile")
+                  localStorage.removeItem("token")
+                  window.location.href = "/login"
                 }}
-                className="px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-300 rounded-2xl hover:bg-red-500/30 transition-all duration-200"
+                className="px-6 py-3 bg-red-500/20 border border-red-400/30 text-red-100 rounded-2xl hover:bg-red-500/30 transition-all duration-200"
               >
                 Logout
               </button>
@@ -455,33 +473,37 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-16">
         {/* Profile Section */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 mb-8 shadow-2xl">
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 mb-8 shadow-xl">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Profile Overview</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Overview</h2>
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
+              className="flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors"
             >
               <Edit2 className="w-4 h-4" />
               Edit
             </button>
           </div>
-          
+
           <div className="grid lg:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-sm font-medium text-slate-400 mb-3">Bio</h3>
-              <p className="text-white leading-relaxed">{profile.bio || "No bio added yet. Tell others about yourself!"}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Bio</h3>
+              <p className="text-gray-900 dark:text-white leading-relaxed">
+                {profile.bio || "No bio added yet. Tell others about yourself!"}
+              </p>
             </div>
-            
+
             <div>
-              <h3 className="text-sm font-medium text-slate-400 mb-3">Skills ({profile.skills?.length || 0})</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                Skills ({profile.skills?.length || 0})
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {profile && profile.skills && profile.skills.length > 0 ? (
-                  profile.skills.map(skill => <SkillBadge key={skill} skill={skill} />)
+                  profile.skills.map((skill) => <SkillBadge key={skill} skill={skill} />)
                 ) : (
-                  <p className="text-slate-400 italic">No skills added yet</p>
+                  <p className="text-gray-500 dark:text-gray-400 italic">No skills added yet</p>
                 )}
               </div>
             </div>
@@ -495,44 +517,129 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Recent Activity</h2>
-            <div className="flex items-center gap-2 text-slate-400">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">Last 7 days</span>
+        {/* Recent Activity & Quick Actions */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Recent Activity */}
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Activity</h2>
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">Last 7 days</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                {
+                  icon: Video,
+                  title: "Video call with Alex Johnson",
+                  time: "45 minutes ago",
+                  duration: "32m 16s",
+                  color: "blue",
+                },
+                {
+                  icon: MessageSquare,
+                  title: "New message from Sarah Chen",
+                  time: "2 hours ago",
+                  duration: "5 messages",
+                  color: "green",
+                },
+                {
+                  icon: Users,
+                  title: "Connected with Mike Rodriguez",
+                  time: "1 day ago",
+                  duration: "New connection",
+                  color: "purple",
+                },
+              ].map((activity, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl px-4 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                        activity.color === "blue"
+                          ? "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                          : activity.color === "green"
+                            ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400"
+                            : "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400"
+                      }`}
+                    >
+                      <activity.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{activity.title}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{activity.time}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full">
+                    {activity.duration}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-          
-          <div className="space-y-4">
-            {[
-              { icon: Video, title: "Video call with Alex Johnson", time: "45 minutes ago", duration: "32m 16s", color: "blue" },
-              { icon: MessageSquare, title: "New message from Sarah Chen", time: "2 hours ago", duration: "5 messages", color: "green" },
-              { icon: Users, title: "Connected with Mike Rodriguez", time: "1 day ago", duration: "New connection", color: "purple" }
-            ].map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between py-4 border-b border-white/10 last:border-0 hover:bg-white/5 rounded-2xl px-4 transition-all duration-200"
+
+          {/* Quick Actions */}
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Actions</h2>
+              <Activity className="w-6 h-6 text-gray-400" />
+            </div>
+
+            <div className="space-y-4">
+              <Link
+                to="/home"
+                className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-500/20 dark:hover:to-pink-500/20 transition-all duration-200 group"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                    activity.color === 'blue' ? 'bg-blue-500/20 text-blue-400' :
-                    activity.color === 'green' ? 'bg-green-500/20 text-green-400' :
-                    'bg-purple-500/20 text-purple-400'
-                  }`}>
-                    <activity.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-white">{activity.title}</p>
-                    <p className="text-sm text-slate-400">{activity.time}</p>
-                  </div>
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-sm text-slate-400 bg-white/5 px-3 py-1 rounded-full">
-                  {activity.duration}
-                </span>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    Find New Connections
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Discover people with complementary skills</p>
+                </div>
+              </Link>
+
+              <Link
+                to="/matches"
+                className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 border border-blue-200 dark:border-blue-500/20 rounded-2xl hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-500/20 dark:hover:to-cyan-500/20 transition-all duration-200 group"
+              >
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    View My Matches
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Chat with your connected peers</p>
+                </div>
+              </Link>
+
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Award className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Skill Progress</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Track your learning journey</p>
+                </div>
               </div>
-            ))}
+
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-500/10 dark:to-red-500/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
+                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Set Goals</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Define your learning objectives</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

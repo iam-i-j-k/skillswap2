@@ -83,7 +83,6 @@ const UserCard = ({ user, onConnect, isConnected, isPending, onRemoveConnection 
         )}
       </div>
     </div>
-    <Toaster />
   </div>
 )
 
@@ -103,31 +102,35 @@ const Home = () => {
   const socket = useSocket()
   const currentUserId = useSelector((state) => state.auth.user?._id)
   const navigate = useNavigate()
+  const token = useSelector((state) => state.auth.token);
 
-  // Fetch users on mount
   useEffect(() => {
-    if (usersStatus === "idle") {
-      dispatch(fetchUsers())
+    if (token && usersStatus === "idle") {
+      dispatch(fetchUsers());
     }
-  }, [usersStatus, dispatch])
+  }, [token, usersStatus, dispatch]);
+
 
   useEffect(() => {
     const fetchConnectionRequests = async () => {
       try {
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("token");
         const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        setConnectionRequests(Array.isArray(response.data.connections) ? response.data.connections : [])
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setConnectionRequests(Array.isArray(response.data.connections) ? response.data.connections : []);
+        // Update outgoing requests
+        const outgoing = (response.data.connections || [])
+          .filter(req => req.requester && req.requester._id === currentUserId)
+          .map(req => req.recipient && req.recipient._id);
+        setOutgoingRequests(outgoing);
       } catch (err) {
-        showError(err)
+        showError(err);
       }
-    }
+    };
 
-    fetchConnectionRequests()
-  }, [])
+    fetchConnectionRequests();
+  }, [currentUserId])
 
   // Fetch connections
   useEffect(() => {
@@ -170,7 +173,15 @@ const Home = () => {
           },
         },
       )
-      setOutgoingRequests((prev) => [...prev, user._id])
+      setOutgoingRequests((prev) => [...prev, user._id]);
+
+      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const outgoing = (response.data.connections || [])
+        .filter(req => req.requester && req.requester._id === currentUserId)
+        .map(req => req.recipient && req.recipient._id);
+      setOutgoingRequests(outgoing)
       notify()
     } catch (err) {
       showError(err)
@@ -240,51 +251,48 @@ const Home = () => {
 
   // Real-time socket handlers
   useEffect(() => {
-    if (!socket) return
+    if (!socket || !currentUserId) return;
 
-    socket.emit("join", currentUserId)
+    socket.emit("join-connection-rooms", currentUserId);
 
-    socket.on("userRegistered", (user) => {
-      dispatch(addUser(user))
-    })
+    socket.on("newConnectionRequest", (connection) => {
+      setConnectionRequests((prev) => [...prev, connection]);
+    });
 
-    socket.on("connectionRequestSent", (connection) => {
-      if (connection.recipient === currentUserId) {
-        setConnectionRequests((prev) => [...prev, connection])
-      }
-      if (connection.requester._id === currentUserId) {
-        setOutgoingRequests((prev) => prev.filter((id) => id !== connection.recipient._id))
-      }
-    })
+
 
     socket.on("connectionAccepted", (connection) => {
-      setConnectionRequests((prev) => prev.filter((req) => req._id !== connection._id))
+      setConnectionRequests((prev) => prev.filter((req) => req._id !== connection._id));
       setOutgoingRequests((prev) =>
         prev.filter(
           (id) =>
             id !== (connection.requester._id === currentUserId ? connection.recipient._id : connection.requester._id),
         ),
-      )
-      if (connection.requester._id === currentUserId || connection.recipient._id === currentUserId) {
-        refetchConnections()
-      }
-    })
+      );
+      refetchConnections();
+    });
 
-    socket.on("connectionDeclined", ({ connectionId, remover }) => {
-      setConnectionRequests((prev) => prev.filter((req) => req._id !== connectionId))
-      setConnectedUsers((prev) => prev.filter((match) => match.connectionId !== connectionId))
-    })
+    socket.on("connectionDeclined", ({ connectionId }) => {
+      setConnectionRequests((prev) => prev.filter((req) => req._id !== connectionId));
+      setConnectedUsers((prev) => prev.filter((match) => match.connectionId !== connectionId));
+    });
 
     return () => {
-      socket.off("userRegistered")
-      socket.off("connectionRequestSent")
-      socket.off("connectionAccepted")
-      socket.off("connectionDeclined")
-    }
-  }, [socket, currentUserId, dispatch])
+      socket.off("newConnectionRequest");
+      socket.off("connectionRequestSent");
+      socket.off("connectionAccepted");
+      socket.off("connectionDeclined");
+    };
+  }, [socket, currentUserId]);
 
   const isPendingRequest = (userId) =>
-    outgoingRequests.includes(userId) || connectionRequests.some((req) => req.requester && req.requester._id === userId)
+    outgoingRequests.includes(userId) ||
+    connectionRequests.some(
+      (req) =>
+        req.requester && req.requester._id === currentUserId &&
+        req.recipient && req.recipient._id === userId &&
+        req.status === "pending"
+    );
 
   const isConnected = (userId) => connectedUsers.some((conn) => conn.user && conn.user._id === userId)
 
