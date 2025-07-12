@@ -8,7 +8,7 @@ export const SocketProvider = ({ children }) => {
   const [isReady, setIsReady] = React.useState(false);
 
   useEffect(() => {
-    socketRef.current = io("wss://backend-y50t.onrender.com", {
+    socketRef.current = io(import.meta.env.VITE_REACT_APP_BACKEND_BASEURL, {
       transports: ["websocket"],
       withCredentials: true,
     });
