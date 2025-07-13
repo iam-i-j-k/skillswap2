@@ -1,13 +1,13 @@
 import React,{ useEffect, useState } from "react"
-import { Header } from "./Header"
-import Footer from "./Footer"
 import { Users, Loader2, Search, UserPlus, Sparkles } from "lucide-react"
 import axios from "axios"
 import toast, { Toaster } from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchUsers, selectAllUsers, selectUsersStatus, selectUsersError, addUser } from "../features/users/userSlice"
+import { fetchRequests, addRequest } from "../features/connectionsSlice.js/connectionSlice";
 import { useNavigate } from "react-router-dom"
 import { useSocket } from "../context/SocketContext"
+
 
 const notify = () => toast.success("Request Sent!")
 const showError = (err) => toast.error(err.response?.data?.error || err.message)
@@ -89,9 +89,7 @@ const UserCard = ({ user, onConnect, isConnected, isPending, onRemoveConnection 
 const Home = () => {
   const [filteredUsers, setFilteredUsers] = useState([])
   const [error, setError] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [connectionRequests, setConnectionRequests] = useState([])
   const [connectedUsers, setConnectedUsers] = useState([])
   const [outgoingRequests, setOutgoingRequests] = useState([])
 
@@ -103,6 +101,8 @@ const Home = () => {
   const currentUserId = useSelector((state) => state.auth.user?._id)
   const navigate = useNavigate()
   const token = useSelector((state) => state.auth.token);
+  const requests = useSelector(state => state.connections.requests);
+  const safeRequests = Array.isArray(requests) ? requests : [];
 
   useEffect(() => {
     if (token && usersStatus === "idle") {
@@ -118,7 +118,7 @@ const Home = () => {
         const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setConnectionRequests(Array.isArray(response.data.connections) ? response.data.connections : []);
+        dispatch(fetchRequests());
         // Update outgoing requests
         const outgoing = (response.data.connections || [])
           .filter(req => req.requester && req.requester._id === currentUserId)
@@ -188,46 +188,12 @@ const Home = () => {
     }
   }
 
-  const handleAccept = async (requestId) => {
-    try {
-      const token = localStorage.getItem("token")
-      await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections/${requestId}/accept`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      toast.success("Connection accepted")
-      refetchConnections()
-    } catch (err) {
-      showError(err)
-    }
-  }
-
-  const handleDecline = async (requestId) => {
-    try {
-      const token = localStorage.getItem("token")
-      await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections/${requestId}/decline`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      )
-      setConnectionRequests((prevRequests) => prevRequests.filter((request) => request._id !== requestId))
-      toast.success("Connection declined")
-    } catch (err) {
-      showError(err)
-    }
-  }
 
   const handleRemoveConnection = async (connectionId) => {
     try {
       const token = localStorage.getItem("token")
-      await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections/${connectionId}/decline`,
-        {},
+      await axios.delete(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections/${connectionId}`,
         { headers: { Authorization: `Bearer ${token}` } },
       )
       toast.success("Connection removed")
@@ -249,45 +215,11 @@ const Home = () => {
     }
   }
 
-  // Real-time socket handlers
-  useEffect(() => {
-    if (!socket || !currentUserId) return;
 
-    socket.emit("join-connection-rooms", currentUserId);
-
-    socket.on("newConnectionRequest", (connection) => {
-      setConnectionRequests((prev) => [...prev, connection]);
-    });
-
-
-
-    socket.on("connectionAccepted", (connection) => {
-      setConnectionRequests((prev) => prev.filter((req) => req._id !== connection._id));
-      setOutgoingRequests((prev) =>
-        prev.filter(
-          (id) =>
-            id !== (connection.requester._id === currentUserId ? connection.recipient._id : connection.requester._id),
-        ),
-      );
-      refetchConnections();
-    });
-
-    socket.on("connectionDeclined", ({ connectionId }) => {
-      setConnectionRequests((prev) => prev.filter((req) => req._id !== connectionId));
-      setConnectedUsers((prev) => prev.filter((match) => match.connectionId !== connectionId));
-    });
-
-    return () => {
-      socket.off("newConnectionRequest");
-      socket.off("connectionRequestSent");
-      socket.off("connectionAccepted");
-      socket.off("connectionDeclined");
-    };
-  }, [socket, currentUserId]);
 
   const isPendingRequest = (userId) =>
     outgoingRequests.includes(userId) ||
-    connectionRequests.some(
+    safeRequests.some(
       (req) =>
         req.requester && req.requester._id === currentUserId &&
         req.recipient && req.recipient._id === userId &&
@@ -301,7 +233,7 @@ const Home = () => {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
       
-      <Header connectionRequests={connectionRequests} handleAccept={handleAccept} handleDecline={handleDecline} />
+
 
       {/* Main Content */}
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -394,7 +326,7 @@ const Home = () => {
                   isPending={isPendingRequest(user._id)}
                   onRemoveConnection={() => {
                     const match = connectedUsers.find(conn => conn.user && conn.user._id === user._id);
-                    if (match) handleRemoveConnection(match.connectionId);
+                    if (match) handleRemoveConnection(match.connectionId);                    
                   }}
                 />
               </div>
@@ -403,7 +335,6 @@ const Home = () => {
         )}
       </main>
 
-      <Footer />
     </div>
   )
 }

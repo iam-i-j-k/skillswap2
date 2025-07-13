@@ -1,4 +1,3 @@
-
 import React,{ useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
@@ -149,6 +148,7 @@ const SignUp = () => {
   const [customSkill, setCustomSkill] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showVerifyNotice, setShowVerifyNotice] = useState(false)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -193,19 +193,16 @@ const SignUp = () => {
       return
     }
 
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`, {
+      await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
         skills: formData.skills,
         bio: formData.bio,
       })
-
-      localStorage.setItem("token", response.data.token)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
-      navigate("/dashboard")
+      setShowVerifyNotice(true)
     } catch (error) {
       setError(error.response?.data?.error || "Registration failed. Please try again.")
     } finally {
@@ -236,7 +233,12 @@ const SignUp = () => {
               <p className="text-sm">{error}</p>
             </div>
           )}
-
+          {showVerifyNotice && (
+            <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-2xl text-green-800 dark:text-green-200 text-center mt-8">
+              <Check className="inline w-6 h-6 mr-2 align-middle" />
+              Check your email to verify your account.
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Username Input */}
             <div className="space-y-2">

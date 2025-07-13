@@ -139,7 +139,7 @@ const handleSubmit = async (e) => {
 
           {/* Forgot Password */}
           <div className="mt-6 text-center">
-            <a href="#" className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+            <a href="/forgot-password" className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
               Forgot your password?
             </a>
           </div>

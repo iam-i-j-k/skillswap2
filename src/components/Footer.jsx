@@ -1,5 +1,7 @@
 import React from "react"
 import { Facebook, Twitter, Linkedin, Mail, MessageCircle, MapPin, Heart } from "lucide-react"
+import { Sparkles } from "lucide-react"
+import { Link } from "react-router-dom"
 
 function Footer() {
   return (
@@ -9,12 +11,19 @@ function Footer() {
           {/* Logo and Contact */}
           <div className="col-span-1 lg:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">S</span>
-              </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                Skill<span className="text-purple-600 dark:text-purple-400">Swap</span>
-              </span>
+                <a href="/dashboard" className="flex items-center space-x-3 group">
+                  <div className="relative">
+                    <div className="absolute -inset-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity" />
+                    <div className="relative w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <Sparkles className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Skill<span className="text-purple-600 dark:text-purple-400">Swap</span>
+                    </h1>
+                  </div>
+                </a>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md leading-relaxed">
               Connect with talented individuals, share knowledge, and grow together in our vibrant community of learners
@@ -23,11 +32,7 @@ function Footer() {
             <div className="space-y-3 text-gray-600 dark:text-gray-400">
               <p className="flex items-center space-x-3 transition-all duration-300 hover:text-purple-600 dark:hover:text-purple-400">
                 <Mail className="w-5 h-5 text-purple-500" />
-                <span>skillswap@gmail.com</span>
-              </p>
-              <p className="flex items-center space-x-3 transition-all duration-300 hover:text-purple-600 dark:hover:text-purple-400">
-                <MessageCircle className="w-5 h-5 text-purple-500" />
-                <span>help@skillswap.com</span>
+                <a href="mailto:helpskillswap@gmail.com">helpskillswap@gmail.com</a>
               </p>
               <p className="flex items-center space-x-3 transition-all duration-300 hover:text-purple-600 dark:hover:text-purple-400">
                 <MapPin className="w-5 h-5 text-purple-500" />
@@ -42,19 +47,42 @@ function Footer() {
               Quick Links
             </h3>
             <ul className="space-y-4">
-              {["Benefits", "How It Works", "Our Testimonials", "Our FAQ", "Team", "Contact Us"].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
-                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group"
-                  >
-                    <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                      ›
-                    </span>
-                    {item}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link to="/benefits" className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group">
+                  <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                  Benefits
+                </Link>
+              </li>
+              <li>
+                <Link to="/how-it-works" className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group">
+                  <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link to="/testimonials" className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group">
+                  <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                  Our Testimonials
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group">
+                  <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                  Our FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/team" className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group">
+                  <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                  Team
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact-us" className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 flex items-center group">
+                  <span className="mr-2 text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -149,7 +177,7 @@ function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10 text-center">
-          <p className="text-gray-500 dark:text-gray-400">© 2024 SkillSwap. All Rights Reserved.</p>
+          <p className="text-gray-500 dark:text-gray-400"> 2024 SkillSwap. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
