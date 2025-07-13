@@ -17,7 +17,7 @@ const VerifyEmail = () => {
       setMessage("Invalid verification link.");
       return;
     }
-    axios.post("/api/auth/verify-email", { token })
+    axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/verify-email`, { token })
       .then(res => {
         setStatus("success");
         setMessage(res.data.message || "Email verified successfully!");
