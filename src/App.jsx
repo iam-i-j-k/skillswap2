@@ -23,6 +23,7 @@ import ContactUs from "./quicklinks/ContactUs"
 import Footer from "./components/Footer"
 import ForgotPassword from "./components/ForgotPassword"
 import VerifyEmail from "./components/VerifyEmail"
+import ResetPassword from "./components/ResetPassword"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
@@ -65,7 +66,6 @@ function AppWithRouter({ token }) {
   const location = useLocation();
   const showError = (err) => toast.error(err.response?.data?.error || err.message)
 
-  // All connectionRequests logic is now in Redux!
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
@@ -80,6 +80,7 @@ function AppWithRouter({ token }) {
             }
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/signup" element={<SignUp />} />
           <Route

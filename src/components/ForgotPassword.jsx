@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -11,12 +12,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Replace with your API endpoint
-      const response = await axios.put(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/forgot-password`, { email });
       setSent(true);
       toast.success("If this email is registered, a reset link has been sent.");
     } catch (err) {

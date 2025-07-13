@@ -12,11 +12,12 @@ const ConnectionRequests = ({ open }) => {
 
   const safeRequests = Array.isArray(connectionRequests) ? connectionRequests : [];
 
+  const user = useSelector(state => state.auth.user);
   useEffect(() => {
-    if (open && status === 'idle') {
+    if (open && status === 'idle' && user && user.token) {
       dispatch(fetchRequests());
     }
-  }, [open, status, dispatch]);
+  }, [open, user, status, dispatch]);
 
   const handleAccept = (id) => {
     dispatch(acceptConnectionRequest(id));

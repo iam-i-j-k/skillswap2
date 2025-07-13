@@ -111,6 +111,7 @@ const Home = () => {
   }, [token, usersStatus, dispatch]);
 
 
+  const user = useSelector(state => state.auth.user);
   useEffect(() => {
     const fetchConnectionRequests = async () => {
       try {
@@ -118,7 +119,9 @@ const Home = () => {
         const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        dispatch(fetchRequests());
+        if(user && user.token){
+          dispatch(fetchRequests());
+        }
         // Update outgoing requests
         const outgoing = (response.data.connections || [])
           .filter(req => req.requester && req.requester._id === currentUserId)
@@ -130,7 +133,7 @@ const Home = () => {
     };
 
     fetchConnectionRequests();
-  }, [currentUserId])
+  }, [user, currentUserId])
 
   // Fetch connections
   useEffect(() => {

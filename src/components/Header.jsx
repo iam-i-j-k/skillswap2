@@ -65,9 +65,12 @@ const Header = () => {
   }, [socket, currentUserId]);
 
   // Always fetch connection requests on header mount
+  const user = useSelector(state => state.auth.user);
   useEffect(() => {
-    dispatch(fetchRequests());
-  }, [dispatch]);
+    if(user && user.token){
+      dispatch(fetchRequests());
+    }
+  }, [user, dispatch]);
 
   const menuItems = [
     {
