@@ -12,27 +12,27 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      return (
-        localStorage.getItem("darkMode") === "true" ||
-        (!localStorage.getItem("darkMode") && window.matchMedia("(prefers-color-scheme: dark)").matches)
-      )
-    }
-    return true
-  })
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("darkMode");
+    if (stored !== null) return stored === "true";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  return false;
+});
+
 
   const socket = useSocket() // Use shared socket
   const currentUserId = useSelector((state) => state.auth.user?._id);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark")
-      localStorage.setItem("darkMode", "true")
-    } else {
-      document.documentElement.classList.remove("dark")
-      localStorage.setItem("darkMode", "false")
-    }
-  }, [darkMode])
+  if (darkMode) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+  localStorage.setItem("darkMode", darkMode.toString());
+}, [darkMode]);
+
 
   useEffect(() => {
     if (!socket || !currentUserId) return;
