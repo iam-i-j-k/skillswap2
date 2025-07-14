@@ -14,11 +14,14 @@ const Header = () => {
   const [darkMode, setDarkMode] = useState(() => {
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem("darkMode");
-    if (stored !== null) return stored === "true";
+    if (stored !== null) {
+      return stored === "true";
+    }
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   }
   return false;
 });
+
 
 
   const socket = useSocket() // Use shared socket
