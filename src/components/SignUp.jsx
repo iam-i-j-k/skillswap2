@@ -149,7 +149,6 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showVerifyNotice, setShowVerifyNotice] = useState(false)
-  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -291,6 +290,7 @@ const SignUp = () => {
                   placeholder="••••••••"
                 />
                 <button
+                  tabIndex={-1}
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -317,6 +317,7 @@ const SignUp = () => {
                   placeholder="••••••••"
                 />
                 <button
+                  tabIndex={-1}
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"

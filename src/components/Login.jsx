@@ -39,7 +39,15 @@ const handleSubmit = async (e) => {
     // ✅ THEN navigate
     navigate("/dashboard")
   } catch (error) {
-    setError(error.response?.data?.error || "Login failed")
+    if (error.response) {
+      if (error.response.status === 401) {
+        setError("Incorrect email or password. Please try again.")
+      } else {
+        setError(error.response?.data?.error || "Login failed. Please try again later.")
+      }
+    } else {
+      setError("Something went wrong. Please check your internet connection and try again.")
+    }
   } finally {
     setIsLoading(false)
   }

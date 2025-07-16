@@ -66,6 +66,7 @@ export const rejectConnectionRequest = createAsyncThunk(
 const connectionSlice = createSlice({
   name: 'connections',
   initialState: {
+    connectedUsers: [],
     requests: [],
     status: 'idle',
     error: null,
@@ -76,6 +77,9 @@ const connectionSlice = createSlice({
         state.requests = [action.payload, ...state.requests];
       }
     },
+    setConnectedUsers: (state, action) => {
+      state.connectedUsers = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -85,7 +89,6 @@ const connectionSlice = createSlice({
       })
       .addCase(fetchRequests.fulfilled, (state, action) => {
            state.status = 'succeeded';
-           // If backend returns { connections: [...] }
            const connections = Array.isArray(action.payload?.connections)
              ? action.payload.connections
              : Array.isArray(action.payload)
@@ -97,16 +100,14 @@ const connectionSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
       })
-      // Accept connection request
       .addCase(acceptConnectionRequest.fulfilled, (state, action) => {
         state.requests = state.requests.filter(req => req._id !== action.payload);
       })
-      // Reject connection request
       .addCase(rejectConnectionRequest.fulfilled, (state, action) => {
         state.requests = state.requests.filter(req => req._id !== action.payload);
       });
   },
 });
 
-export const { addRequest } = connectionSlice.actions;
+export const { addRequest, setConnectedUsers, ConnectedUsers } = connectionSlice.actions;
 export default connectionSlice.reducer;

@@ -177,7 +177,7 @@ function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10 text-center">
-          <p className="text-gray-500 dark:text-gray-400"> 2024 SkillSwap. All Rights Reserved.</p>
+          <p className="text-gray-500 dark:text-gray-400"> 2025 SkillSwap. All Rights Reserved.</p>
         </div>
       </div>
     </footer>

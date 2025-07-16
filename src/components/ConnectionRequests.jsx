@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Check, X as XMark } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchRequests, acceptConnectionRequest, rejectConnectionRequest } from '../features/connectionsSlice.js/connectionSlice';
+import { fetchRequests, acceptConnectionRequest, rejectConnectionRequest, addRequest, setConnectedUsers, ConnectedUsers } from '../features/connectionsSlice.js/connectionSlice';
 import { useSocket } from '../context/SocketContext'
 
 const ConnectionRequests = ({ open }) => {
@@ -13,46 +13,51 @@ const ConnectionRequests = ({ open }) => {
   const safeRequests = Array.isArray(connectionRequests) ? connectionRequests : [];
 
   const user = useSelector(state => state.auth.user);
+  const token = useSelector(state => state.auth.token);
   useEffect(() => {
-    if (open && status === 'idle' && user && user.token) {
+    if (open && status === 'idle' && user && token) {
       dispatch(fetchRequests());
     }
   }, [open, user, status, dispatch]);
 
   const handleAccept = (id) => {
     dispatch(acceptConnectionRequest(id));
-    // Optionally, make API call here to update backend
   };
 
   const handleDecline = (id) => {
     dispatch(rejectConnectionRequest(id));
-    // Optionally, make API call here to update backend
   };
 
     useEffect(() => {
       if (!socket || !currentUserId) return;
-  
+
       socket.on("newConnectionRequest", (connection) => {
         dispatch(addRequest(connection));
       });
-  
+
       socket.on("connectionAccepted", () => {
-        dispatch(fetchRequests());
+        // After a connection is accepted, request the updated connected users
+        socket.emit("getConnectedUsers", { userId: currentUserId });
       });
-  
-      socket.on("connectionDeclined", () => {
-        dispatch(fetchRequests());
+
+      socket.on("connectedUsersUpdated", (users) => {
+        dispatch(setConnectedUsers(users));
       });
-  
+
+      socket.on("connectedUsers", (users) => {
+        dispatch(setConnectedUsers(users));
+      });
+
       socket.on("connectionRemoved", ({ connectionId }) => {
-        setConnectedUsers((prev) => prev.filter((match) => match.connectionId !== connectionId));
+        const updatedUsers = ConnectedUsers.filter((match) => match.connectionId !== connectionId);
+        dispatch(setConnectedUsers(updatedUsers));
       });
-  
+
       return () => {
         socket.off("newConnectionRequest");
-        socket.off("connectionRequestSent");
         socket.off("connectionAccepted");
-        socket.off("connectionDeclined");
+        socket.off("connectedUsersUpdated");
+        socket.off("connectedUsers");
         socket.off("connectionRemoved");
       };
     }, [socket, currentUserId, dispatch]);
