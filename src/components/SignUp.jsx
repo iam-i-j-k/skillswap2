@@ -440,6 +440,20 @@ const SignUp = () => {
             </Link>
           </p>
         </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            By creating an account, you agree to our{' '}
+            <Link to="/terms" className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

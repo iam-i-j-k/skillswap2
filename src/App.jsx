@@ -24,6 +24,8 @@ import Footer from "./components/Footer"
 import ForgotPassword from "./components/ForgotPassword"
 import VerifyEmail from "./components/VerifyEmail"
 import ResetPassword from "./components/ResetPassword"
+import TermsOfService from "./components/TermsOfService"
+import PrivacyPolicy from "./components/PrivacyPolicy"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
@@ -131,6 +133,8 @@ function AppWithRouter({ token }) {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/team" element={<Team />} />
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
         </Routes>
       </main>
       <Toaster />
