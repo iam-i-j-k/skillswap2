@@ -13,35 +13,64 @@ import {
   TrendingUp,
   Clock,
   Activity,
-  Award,
   Target,
+  BarChart3,
+  Zap,
+  BookOpen,
+  Star,
+  ArrowUpRight,
+  ChevronRight,
 } from "lucide-react"
 
-const StatsCard = ({ icon: Icon, title, value, trend, color = "purple", description }) => {
+const StatsCard = ({ icon: Icon, title, value, trend, color = "purple", description, change }) => {
   const colorClasses = {
     purple: "from-purple-500 to-purple-600",
     blue: "from-blue-500 to-blue-600",
     green: "from-green-500 to-green-600",
     orange: "from-orange-500 to-orange-600",
+    pink: "from-pink-500 to-pink-600",
+  }
+
+  const bgColorClasses = {
+    purple: "bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20",
+    blue: "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20",
+    green: "bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-500/20",
+    orange: "bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20",
+    pink: "bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/20",
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 hover:shadow-lg transition-all duration-300 group">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-2xl bg-gradient-to-r ${colorClasses[color]} shadow-lg`}>
-          <Icon className="h-6 w-6 text-white" />
-        </div>
-        {trend && (
-          <div className="flex items-center text-green-500 text-sm font-medium">
-            <TrendingUp className="w-4 h-4 mr-1" />
-            {trend}
-          </div>
-        )}
+    <div
+      className={`${bgColorClasses[color]} border rounded-3xl p-6 hover:shadow-lg transition-all duration-300 group relative overflow-hidden`}
+    >
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
+        <Icon className="w-full h-full" />
       </div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
-        {description && <p className="text-xs text-gray-500 dark:text-gray-500">{description}</p>}
+
+      <div className="relative">
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-3 rounded-2xl bg-gradient-to-r ${colorClasses[color]} shadow-lg`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          {trend && (
+            <div className="flex items-center text-green-600 dark:text-green-400 text-sm font-medium bg-green-100 dark:bg-green-500/20 px-2 py-1 rounded-full">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              {trend}
+            </div>
+          )}
+        </div>
+        <div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
+          {description && <p className="text-xs text-gray-500 dark:text-gray-500">{description}</p>}
+          {change && (
+            <div className="flex items-center mt-2 text-xs">
+              <ArrowUpRight className="w-3 h-3 text-green-500 mr-1" />
+              <span className="text-green-600 dark:text-green-400 font-medium">{change} from last month</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -69,9 +98,8 @@ const SkillBadge = ({ skill, onRemove, variant = "default" }) => {
   )
 }
 
-// Predefined Skills List
+// Predefined Skills List (same as before)
 const skillOptions = [
-  // Programming & Development
   "JavaScript",
   "TypeScript",
   "React.js",
@@ -106,8 +134,6 @@ const skillOptions = [
   "Bootstrap",
   "Sass",
   "Material UI",
-
-  // DevOps & Cloud
   "Docker",
   "Kubernetes",
   "CI/CD Pipelines",
@@ -125,8 +151,6 @@ const skillOptions = [
   "Bash Scripting",
   "Nginx",
   "Apache",
-
-  // Data Science & AI
   "Machine Learning",
   "Deep Learning",
   "TensorFlow",
@@ -148,8 +172,6 @@ const skillOptions = [
   "PostgreSQL",
   "MySQL",
   "Redis",
-
-  // UI/UX & Design
   "Figma",
   "Adobe XD",
   "Sketch",
@@ -160,16 +182,12 @@ const skillOptions = [
   "Prototyping",
   "Responsive Design",
   "Accessibility (WCAG)",
-
-  // Mobile Development
   "Android Development",
   "iOS Development",
   "Flutter",
   "React Native",
   "SwiftUI",
   "Jetpack Compose",
-
-  // Cybersecurity
   "Ethical Hacking",
   "Penetration Testing",
   "Network Security",
@@ -177,15 +195,11 @@ const skillOptions = [
   "OWASP Top 10",
   "Security Best Practices",
   "ISO 27001",
-
-  // Mathematics & Algorithms
   "Data Structures & Algorithms",
   "Competitive Programming",
   "Discrete Mathematics",
   "Linear Algebra",
   "Probability & Statistics",
-
-  // Business & Soft Skills
   "Agile Methodology",
   "Scrum",
   "Kanban",
@@ -210,7 +224,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
         ...editedProfile,
         skills: [...editedProfile.skills, selectedSkill],
       })
-      setSelectedSkill("") // Reset selection
+      setSelectedSkill("")
     }
   }
 
@@ -316,6 +330,46 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
   )
 }
 
+const QuickActionCard = ({ icon: Icon, title, description, to, color, onClick }) => {
+  const colorClasses = {
+    purple:
+      "from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10 border-purple-200 dark:border-purple-500/20 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-500/20 dark:hover:to-pink-500/20 group-hover:text-purple-600 dark:group-hover:text-purple-400",
+    blue: "from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 border-blue-200 dark:border-blue-500/20 hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-500/20 dark:hover:to-cyan-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400",
+    green:
+      "from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border-green-200 dark:border-green-500/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-500/20 dark:hover:to-emerald-500/20 group-hover:text-green-600 dark:group-hover:text-green-400",
+    orange:
+      "from-orange-50 to-red-50 dark:from-orange-500/10 dark:to-red-500/10 border-orange-200 dark:border-orange-500/20 hover:from-orange-100 hover:to-red-100 dark:hover:from-orange-500/20 dark:hover:to-red-500/20 group-hover:text-orange-600 dark:group-hover:text-orange-400",
+  }
+
+  const iconColorClasses = {
+    purple: "from-purple-500 to-pink-500",
+    blue: "from-blue-500 to-cyan-500",
+    green: "from-green-500 to-emerald-500",
+    orange: "from-orange-500 to-red-500",
+  }
+
+  const Component = to ? Link : "div"
+  const props = to ? { to } : { onClick }
+
+  return (
+    <Component
+      {...props}
+      className={`flex items-center gap-4 p-6 bg-gradient-to-r ${colorClasses[color]} border rounded-2xl transition-all duration-200 group cursor-pointer`}
+    >
+      <div
+        className={`w-12 h-12 bg-gradient-to-r ${iconColorClasses[color]} rounded-2xl flex items-center justify-center shadow-lg`}
+      >
+        <Icon className="w-6 h-6 text-white" />
+      </div>
+      <div className="flex-1">
+        <h3 className="font-semibold text-gray-900 dark:text-white transition-colors">{title}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+      </div>
+      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+    </Component>
+  )
+}
+
 const Dashboard = () => {
   const [username, setUsername] = useState("")
   const [greeting, setGreeting] = useState("")
@@ -373,7 +427,7 @@ const Dashboard = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is included
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         },
       )
@@ -394,22 +448,25 @@ const Dashboard = () => {
       trend: "+12%",
       color: "purple",
       description: "Active network members",
-    },
-    {
-      icon: Video,
-      title: "Video Calls",
-      value: stats.videoCalls,
-      trend: "+8%",
-      color: "blue",
-      description: "Sessions completed",
+      change: "+23",
     },
     {
       icon: MessageSquare,
       title: "Messages Sent",
       value: stats.messagesSent,
       trend: "+24%",
-      color: "green",
+      color: "blue",
       description: "Conversations started",
+      change: "+156",
+    },
+    {
+      icon: Video,
+      title: "Video Calls",
+      value: stats.videoCalls,
+      trend: "+8%",
+      color: "green",
+      description: "Sessions completed",
+      change: "+12",
     },
     {
       icon: Calendar,
@@ -418,25 +475,101 @@ const Dashboard = () => {
       trend: "+5%",
       color: "orange",
       description: "Upcoming meetings",
+      change: "+3",
+    },
+  ]
+
+  const quickActions = [
+    {
+      icon: Users,
+      title: "Find New Connections",
+      description: "Discover people with complementary skills",
+      to: "/home",
+      color: "purple",
+    },
+    {
+      icon: MessageSquare,
+      title: "View My Matches",
+      description: "Chat with your connected peers",
+      to: "/matches",
+      color: "blue",
+    },
+    {
+      icon: BarChart3,
+      title: "Skill Progress",
+      description: "Track your learning journey",
+      color: "green",
+    },
+    {
+      icon: Target,
+      title: "Set Goals",
+      description: "Define your learning objectives",
+      color: "orange",
+    },
+  ]
+
+  const recentActivities = [
+    {
+      icon: Video,
+      title: "Video call with Alex Johnson",
+      time: "45 minutes ago",
+      duration: "32m 16s",
+      color: "blue",
+    },
+    {
+      icon: MessageSquare,
+      title: "New message from Sarah Chen",
+      time: "2 hours ago",
+      duration: "5 messages",
+      color: "green",
+    },
+    {
+      icon: Users,
+      title: "Connected with Mike Rodriguez",
+      time: "1 day ago",
+      duration: "New connection",
+      color: "purple",
+    },
+    {
+      icon: BookOpen,
+      title: "Completed JavaScript course",
+      time: "2 days ago",
+      duration: "8 hours",
+      color: "orange",
     },
   ]
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      {/* Welcome Section */}
+      {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg border border-white/30">
-                  {profile.username?.charAt(0) || username?.charAt(0) || "U"}
+              <div className="flex items-center gap-6 mb-6">
+                <div className="relative">
+                  <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-lg border border-white/30">
+                    {profile.username?.charAt(0) || username?.charAt(0) || "U"}
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white/20 flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                  </div>
                 </div>
                 <div>
                   <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">
-                    {greeting}, {profile.username || username} 👋
+                    {greeting}, {profile.username || username}! 👋
                   </h1>
                   <p className="text-purple-100 text-lg">Ready to connect and learn something new today?</p>
+                  <div className="flex items-center gap-4 mt-3">
+                    <div className="flex items-center gap-2 text-purple-200">
+                      <Star className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm">4.8 rating</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-purple-200">
+                      <Zap className="w-4 h-4 text-green-400" />
+                      <span className="text-sm">Active learner</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -456,17 +589,6 @@ const Dashboard = () => {
                 <Users className="w-4 h-4" />
                 Connect with People
               </Link>
-              <button
-                onClick={() => {
-                  localStorage.removeItem("user")
-                  localStorage.removeItem("userProfile")
-                  localStorage.removeItem("token")
-                  window.location.href = "/login"
-                }}
-                className="px-6 py-3 bg-red-500/20 border border-red-400/30 text-red-100 rounded-2xl hover:bg-red-500/30 transition-all duration-200"
-              >
-                Logout
-              </button>
             </div>
           </div>
         </div>
@@ -474,7 +596,14 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-16">
-        {/* Profile Section */}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statsCards.map((stat, index) => (
+            <StatsCard key={index} {...stat} />
+          ))}
+        </div>
+
+        {/* Profile Overview */}
         <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 mb-8 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Overview</h2>
@@ -501,28 +630,42 @@ const Dashboard = () => {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {profile && profile.skills && profile.skills.length > 0 ? (
-                  profile.skills.map((skill) => <SkillBadge key={skill} skill={skill} />)
+                  profile.skills.slice(0, 6).map((skill) => <SkillBadge key={skill} skill={skill} />)
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 italic">No skills added yet</p>
+                )}
+                {profile.skills && profile.skills.length > 6 && (
+                  <span className="px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 rounded-full text-sm">
+                    +{profile.skills.length - 6} more
+                  </span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {statsCards.map((stat, index) => (
-            <StatsCard key={index} {...stat} />
-          ))}
-        </div>
+        {/* Main Grid */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Actions</h2>
+                <Activity className="w-6 h-6 text-gray-400" />
+              </div>
 
-        {/* Recent Activity & Quick Actions */}
-        <div className="grid lg:grid-cols-2 gap-8">
+              <div className="grid gap-4">
+                {quickActions.map((action, index) => (
+                  <QuickActionCard key={index} {...action} />
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Recent Activity */}
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Activity</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Activity</h2>
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                 <Clock className="w-4 h-4" />
                 <span className="text-sm">Last 7 days</span>
@@ -530,116 +673,40 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {[
-                {
-                  icon: Video,
-                  title: "Video call with Alex Johnson",
-                  time: "45 minutes ago",
-                  duration: "32m 16s",
-                  color: "blue",
-                },
-                {
-                  icon: MessageSquare,
-                  title: "New message from Sarah Chen",
-                  time: "2 hours ago",
-                  duration: "5 messages",
-                  color: "green",
-                },
-                {
-                  icon: Users,
-                  title: "Connected with Mike Rodriguez",
-                  time: "1 day ago",
-                  duration: "New connection",
-                  color: "purple",
-                },
-              ].map((activity, index) => (
+              {recentActivities.map((activity, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl px-4 transition-all duration-200"
+                  className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition-all duration-200 group"
                 >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                        activity.color === "blue"
-                          ? "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                          : activity.color === "green"
-                            ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400"
-                            : "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400"
-                      }`}
-                    >
-                      <activity.icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{activity.title}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{activity.time}</p>
-                    </div>
+                  <div
+                    className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                      activity.color === "blue"
+                        ? "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                        : activity.color === "green"
+                          ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400"
+                          : activity.color === "purple"
+                            ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400"
+                            : "bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                    }`}
+                  >
+                    <activity.icon className="w-5 h-5" />
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                      {activity.title}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{activity.time}</p>
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-full">
                     {activity.duration}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Actions</h2>
-              <Activity className="w-6 h-6 text-gray-400" />
-            </div>
-
-            <div className="space-y-4">
-              <Link
-                to="/home"
-                className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-500/20 dark:hover:to-pink-500/20 transition-all duration-200 group"
-              >
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                    Find New Connections
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Discover people with complementary skills</p>
-                </div>
-              </Link>
-
-              <Link
-                to="/matches"
-                className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 border border-blue-200 dark:border-blue-500/20 rounded-2xl hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-500/20 dark:hover:to-cyan-500/20 transition-all duration-200 group"
-              >
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <MessageSquare className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    View My Matches
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Chat with your connected peers</p>
-                </div>
-              </Link>
-
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Award className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Skill Progress</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Track your learning journey</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-500/10 dark:to-red-500/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Set Goals</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Define your learning objectives</p>
-                </div>
-              </div>
-            </div>
+            <button className="w-full mt-4 py-3 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 font-medium transition-colors">
+              View all activity
+            </button>
           </div>
         </div>
       </div>

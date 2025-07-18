@@ -1,79 +1,97 @@
-import React, { useState, useEffect } from "react"
+import React,{ useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark, Moon, Sun, Home } from "lucide-react"
+import { Sparkles, Menu, X, Users, Layout, Bell, Moon, Sun, Home } from "lucide-react"
 import { useSocket } from "../context/SocketContext"
 import ConnectionRequests from "./ConnectionRequests"
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchRequests, addRequest } from '../features/connectionsSlice.js/connectionSlice';
+import { useSelector, useDispatch } from "react-redux"
+import { fetchRequests, addRequest } from "../features/connectionsSlice.js/connectionSlice"
 
 const Header = () => {
   const navigate = useNavigate()
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
-  if (typeof window !== "undefined") {
-    const stored = localStorage.getItem("darkMode");
-    if (stored !== null) {
-      return stored === "true";
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("darkMode")
+      if (stored !== null) {
+        return stored === "true"
+      }
+      return false
     }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
-  return false;
-});
+    return false
+  })
 
-
+  // Refs for click outside functionality
+  const notificationsRef = useRef(null)
+  const mobileMenuRef = useRef(null)
 
   const socket = useSocket() // Use shared socket
-  const currentUserId = useSelector((state) => state.auth.user?._id);
+  const currentUserId = useSelector((state) => state.auth.user?._id)
 
   useEffect(() => {
-  if (darkMode) {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
-  localStorage.setItem("darkMode", darkMode.toString());
-}, [darkMode]);
+    if (darkMode) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+    localStorage.setItem("darkMode", darkMode.toString())
+  }, [darkMode])
 
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false)
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   useEffect(() => {
-    if (!socket || !currentUserId) return;
+    if (!socket || !currentUserId) return
 
     // Real-time updates for connection requests
     socket.on("newConnectionRequest", (connection) => {
-      dispatch(addRequest(connection));
-    });
+      dispatch(addRequest(connection))
+    })
 
     socket.on("connectionAccepted", () => {
-      dispatch(fetchRequests());
-    });
+      dispatch(fetchRequests())
+    })
 
     socket.on("connectionDeclined", () => {
-      dispatch(fetchRequests());
-    });
+      dispatch(fetchRequests())
+    })
 
     // Clean up listeners on unmount
     return () => {
-      socket.off("newConnectionRequest");
-      socket.off("connectionAccepted");
-      socket.off("connectionDeclined");
-    };
-  }, [socket, currentUserId, dispatch]);
+      socket.off("newConnectionRequest")
+      socket.off("connectionAccepted")
+      socket.off("connectionDeclined")
+    }
+  }, [socket, currentUserId, dispatch])
 
   useEffect(() => {
     if (socket && currentUserId) {
-      socket.emit("join-connection-rooms", currentUserId);
+      socket.emit("join-connection-rooms", currentUserId)
     }
-  }, [socket, currentUserId]);
+  }, [socket, currentUserId])
 
   // Always fetch connection requests on header mount
-  const user = useSelector(state => state.auth.user);
+  const user = useSelector((state) => state.auth.user)
   useEffect(() => {
-    if(user && user.token){
-      dispatch(fetchRequests());
+    if (user && user.token) {
+      dispatch(fetchRequests())
     }
-  }, [user, dispatch]);
+  }, [user, dispatch])
 
   const menuItems = [
     {
@@ -94,8 +112,8 @@ const Header = () => {
   ]
 
   // Redux connection requests
-  const requests = useSelector(state => state.connections.requests);
-  const safeRequests = Array.isArray(requests) ? requests : [];
+  const requests = useSelector((state) => state.connections.requests)
+  const safeRequests = Array.isArray(requests) ? requests : []
   const [isRequestsOpen, setIsRequestsOpen] = useState(false)
 
   return (
@@ -130,7 +148,7 @@ const Header = () => {
               </button>
             ))}
             {/* Bell Button for Connection Requests */}
-            <div className="relative">
+            <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setIsRequestsOpen((prev) => !prev)}
                 className="relative flex items-center px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300"
@@ -171,7 +189,10 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <nav className="md:hidden py-4 px-2 space-y-2 border-t border-gray-200 dark:border-white/10">
+          <nav
+            ref={mobileMenuRef}
+            className="md:hidden py-4 px-2 space-y-2 border-t border-gray-200 dark:border-white/10"
+          >
             {menuItems.map((item) => (
               <button
                 key={item.label}

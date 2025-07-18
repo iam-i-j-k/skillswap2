@@ -1,9 +1,9 @@
-import React from "react";
-import Picker from '@emoji-mart/react';
-import data from '@emoji-mart/data';
+import React from "react"
+import Picker from "@emoji-mart/react"
+import data from "@emoji-mart/data"
 
 const EmojiPicker = ({ showEmoji, input, setInput, onSelectEmoji }) => {
-  if (!showEmoji) return null;
+  if (!showEmoji) return null
 
   return (
     <div
@@ -11,7 +11,7 @@ const EmojiPicker = ({ showEmoji, input, setInput, onSelectEmoji }) => {
         fixed bottom-24 right-8 z-50
         max-w-full
         max-h-[400px] sm:max-h-[420px]
-        bg-white rounded-2xl shadow-2xl border border-gray-200
+        bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/20
         overflow-hidden
         animate-fade-in
       "
@@ -23,18 +23,19 @@ const EmojiPicker = ({ showEmoji, input, setInput, onSelectEmoji }) => {
         data={data}
         onEmojiSelect={(emoji) => {
           if (onSelectEmoji) {
-            onSelectEmoji(emoji.native);
+            onSelectEmoji(emoji.native)
           } else {
-            setInput(input + emoji.native);
+            setInput(input + emoji.native)
           }
         }}
         previewPosition="none"
         skinTonePosition="none"
         perLine={8}
         maxFrequentRows={1}
+        theme="auto"
       />
     </div>
-  );
-};
+  )
+}
 
-export default EmojiPicker;
+export default EmojiPicker

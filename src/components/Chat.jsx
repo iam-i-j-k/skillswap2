@@ -1,4 +1,5 @@
-import React,{ useEffect, useRef, useState } from "react"
+import React from "react"
+import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
 import { useSocket } from "../context/SocketContext"
@@ -10,6 +11,7 @@ import EmojiPicker from "./chat/EmojiPicker"
 import SwapModal from "./chat/SwapModal"
 import ResourceModal from "./chat/ResourceModal"
 import { ArrowLeft, Phone, Video, MoreVertical } from "lucide-react"
+import toast from "react-hot-toast"
 
 const Chat = () => {
   const { id: chatUserId } = useParams()
@@ -29,6 +31,7 @@ const Chat = () => {
   const navigate = useNavigate()
   const calendlyLink = "https://calendly.com/irfanjankhan7860"
 
+  
   useEffect(() => {
     socket.on("receiveMessage", (message) => {
       setMessages((prev) => [...prev, message])
@@ -133,13 +136,22 @@ const Chat = () => {
   }
 
   const handleInputChange = (e) => {
-    setInput(e.target.value)
-    if (socket) {
+    const newValue = e.target.value
+    setInput(newValue)
+    
+    if (!socket) return
+
+    if (typingTimeout.current) {
+      clearTimeout(typingTimeout.current)
+    }
+
+    if (newValue.trim()) {
       socket.emit("typing", { to: chatUserId, from: currentUser._id })
-      if (typingTimeout.current) clearTimeout(typingTimeout.current)
       typingTimeout.current = setTimeout(() => {
         socket.emit("stopTyping", { to: chatUserId, from: currentUser._id })
-      }, 500)
+      }, 1000) 
+    } else {
+      socket.emit("stopTyping", { to: chatUserId, from: currentUser._id })
     }
   }
 
@@ -190,9 +202,12 @@ const Chat = () => {
     window.open(calendlyLink, "_blank")
   }
 
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
     if (!socket || !currentUser?._id || !chatUserId) return
     if (window.confirm("Are you sure you want to clear this chat?")) {
+      await axios.delete(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/clear/${chatUserId}`, 
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
       socket.emit("clearChat", {
         userId: currentUser._id,
         chatUserId,
@@ -215,7 +230,7 @@ const Chat = () => {
     }
   }, [socket, chatUserId, currentUser?._id])
 
-  useEffect(() => {
+    useEffect(() => {
     if (!socket || !currentUser?._id) return
     socket.emit("join-connection-rooms", currentUser._id)
   }, [socket, currentUser?._id, chatUserId])
@@ -223,47 +238,45 @@ const Chat = () => {
   if (!chatUserId) return <div>No user selected for chat.</div>
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="bg-gray-50 dark:bg-slate-900 min-h-screen">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20 dark:opacity-10"></div>
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Chat Header */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 mb-6 shadow-2xl">
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 mb-6 shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/matches')}
-                className="p-2 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white"
+                onClick={() => navigate("/matches")}
+                className="p-2 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-gray-900 dark:text-white text-lg font-bold shadow-lg">
                     {recipient?.username?.charAt(0) || "U"}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
                 </div>
 
                 <div>
-                  <h2 className="text-xl font-bold text-white">{recipient?.username || "User"}</h2>
-                  <p className="text-slate-400 text-sm">
-                    {isTyping ? "typing..." : "online"}
-                  </p>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{recipient?.username || "User"}</h2>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">{isTyping ? "typing..." : "online"}</p>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white">
+              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white">
                 <Phone className="w-5 h-5" />
               </button>
-              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white">
+              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white">
                 <Video className="w-5 h-5" />
               </button>
-              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-slate-400 hover:text-white">
+              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white">
                 <MoreVertical className="w-5 h-5" />
               </button>
             </div>
@@ -271,7 +284,7 @@ const Chat = () => {
         </div>
 
         {/* Chat Container */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden">
           {/* Messages Area */}
           <div className="p-6">
             <MessageList
@@ -292,7 +305,7 @@ const Chat = () => {
           </div>
 
           {/* Chat Actions */}
-          <div className="px-6 py-4 border-t border-white/10">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-white/10">
             <ChatActions
               setActiveModal={setActiveModal}
               openCalendly={openCalendly}
