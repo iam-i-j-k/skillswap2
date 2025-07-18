@@ -1,10 +1,11 @@
 import React,{ useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Sparkles, Menu, X, Users, Layout, Bell, Moon, Sun, Home } from "lucide-react"
+import { Sparkles, Menu, X, Users, Layout, Bell, Moon, Sun, Home, User, LogOut } from "lucide-react"
 import { useSocket } from "../context/SocketContext"
 import ConnectionRequests from "./ConnectionRequests"
 import { useSelector, useDispatch } from "react-redux"
 import { fetchRequests, addRequest } from "../features/connectionsSlice.js/connectionSlice"
+import { logout } from "../features/auth/authSlice"
 
 const Header = () => {
   const navigate = useNavigate()
@@ -93,6 +94,15 @@ const Header = () => {
     }
   }, [user, dispatch])
 
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate("/")
+  }
+
+  const handleProfile = () => {
+    navigate("/profile")
+  }
+
   const menuItems = [
     {
       label: "Home",
@@ -147,6 +157,7 @@ const Header = () => {
                 <span>{item.label}</span>
               </button>
             ))}
+
             {/* Bell Button for Connection Requests */}
             <div className="relative" ref={notificationsRef}>
               <button
@@ -162,11 +173,32 @@ const Header = () => {
               </button>
               <ConnectionRequests open={isRequestsOpen} />
             </div>
+
+            {/* Theme Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300"
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            {/* Profile Button */}
+            <button
+              onClick={handleProfile}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300"
+              title="View Profile"
+            >
+              <User className="w-5 h-5" />
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </nav>
 
@@ -224,6 +256,30 @@ const Header = () => {
                   {safeRequests.length}
                 </span>
               )}
+            </button>
+
+            {/* Mobile Profile */}
+            <button
+              onClick={() => {
+                handleProfile()
+                setIsMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300 text-left"
+            >
+              <User className="w-5 h-5" />
+              <span className="font-medium">Profile</span>
+            </button>
+
+            {/* Mobile Logout */}
+            <button
+              onClick={() => {
+                handleLogout()
+                setIsMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-left"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
             </button>
           </nav>
         )}
