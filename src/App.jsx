@@ -26,6 +26,7 @@ import VerifyEmail from "./components/VerifyEmail"
 import ResetPassword from "./components/ResetPassword"
 import TermsOfService from "./components/TermsOfService"
 import PrivacyPolicy from "./components/PrivacyPolicy"
+import ScrollToTop from "./components/ScrollToTop"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
@@ -137,6 +138,7 @@ function AppWithRouter({ token }) {
           <Route path="/privacy" element={<PrivacyPolicy />} />
         </Routes>
       </main>
+      <ScrollToTop />
       <Toaster />
       {location.pathname !== "/login" && location.pathname !== "/signup" && (<Footer />)}
     </div>
