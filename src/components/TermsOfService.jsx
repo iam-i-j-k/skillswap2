@@ -94,7 +94,7 @@ const TermsOfService = () => {
             <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
               Please read these terms carefully before using SkillSwap
             </p>
-            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">Last updated: January 15, 2024</div>
+            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">Last updated: January 15, 2025</div>
           </div>
         </div>
 
