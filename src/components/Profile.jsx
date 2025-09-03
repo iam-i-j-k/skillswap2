@@ -39,7 +39,7 @@ function Profile() {
     try {
       setLoading(true);
       const res = await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users/${currentUser._id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile/${currentUser._id}`,
         editedProfile,
         { headers: { Authorization: `Bearer ${token}` } }
       );
