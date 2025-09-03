@@ -24,7 +24,13 @@ const handleSubmit = async (e) => {
     const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/login`, {
       email,
       password,
-    })
+    },
+    {
+      headers: {
+      "x-api-key": import.meta.env.VITE_REACT_APP_API_KEY,
+    }
+    }
+  )
 
     // Save to localStorage (optional)
     localStorage.setItem("user", JSON.stringify(response.data.user))
