@@ -23,14 +23,70 @@ export const fetchUsers = createAsyncThunk(
   }
 );
 
-// Initial state
+export const fetchProfile = createAsyncThunk(
+  "users/fetchProfile",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+      console.log("Fetching profile with token:", token);
+      const userId = getState().auth.user?._id;
+      console.log("Current userId:", userId);
+      
+      if (!userId) throw new Error("User ID not found");
+
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Fetched profile:", response.data.user);
+      
+      return response.data.user;
+    } catch (error) {
+      const message =
+        error.response?.data?.error || error.message || "Something went wrong";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+
+// Async Thunk to update user profile
+export const updateProfile = createAsyncThunk(
+  'users/updateProfile',
+  async (updatedProfile, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+      const userId = getState().auth.user?._id;
+      if (!userId) throw new Error("User ID not found");
+      const response = await axios.put(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile/${userId}`,
+        updatedProfile,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.user;
+    } catch (error) {
+      const message = error.response?.data?.error || error.message || 'Something went wrong';
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const initialState = {
   users: [],
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
+  profile: null, // Add profile to state
 };
 
-// Slice
 const userSlice = createSlice({
   name: 'users',
   initialState,
@@ -42,6 +98,9 @@ const userSlice = createSlice({
     },
     addUser: (state, action) => {
       state.users.push(action.payload);
+    },
+    setProfile: (state, action) => {
+      state.profile = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -56,14 +115,21 @@ const userSlice = createSlice({
       .addCase(fetchUsers.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-      });
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.profile = action.payload;
+      })
+      .addCase(fetchProfile.fulfilled, (state, action) => {
+      state.profile = action.payload;
+      })
   },
 });
 
-export const { clearUsers, addUser } = userSlice.actions;
+export const { clearUsers, addUser, setProfile } = userSlice.actions;
 
 export const selectAllUsers = (state) => state.users.users;
 export const selectUsersStatus = (state) => state.users.status;
 export const selectUsersError = (state) => state.users.error;
+export const selectProfile = (state) => state.users.profile;
 
 export default userSlice.reducer;

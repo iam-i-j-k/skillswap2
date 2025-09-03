@@ -124,7 +124,19 @@ function Profile() {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{userProfile.username}</h1>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editedProfile.username || ""}
+                        onChange={e => setEditedProfile({ ...editedProfile, username: e.target.value })}
+                        className="text-3xl w-[80%] font-bold text-gray-900 dark:text-white mb-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Your Name"
+                      />
+                    ) : (
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                        {userProfile.username}
+                      </h1>
+                    )}
                     <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400">
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />

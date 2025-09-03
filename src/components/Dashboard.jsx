@@ -1,6 +1,8 @@
-import React,{ useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
+import { selectProfile, updateProfile, setProfile, fetchProfile } from "../features/users/userSlice"
 import {
   Users,
   Video,
@@ -371,14 +373,10 @@ const QuickActionCard = ({ icon: Icon, title, description, to, color, onClick })
 }
 
 const Dashboard = () => {
-  const [username, setUsername] = useState("")
+  const dispatch = useDispatch()
+  const profile = useSelector(selectProfile);
   const [greeting, setGreeting] = useState("")
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  const [profile, setProfile] = useState({
-    username: "",
-    bio: "",
-    skills: [],
-  })
   const [stats, setStats] = useState({
     totalConnections: 0,
     messagesSent: 0,
@@ -386,57 +384,44 @@ const Dashboard = () => {
     scheduledCalls: 0,
   })
 
-  useEffect(() => {
-    // Load user data
-    const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}
+useEffect(() => {
+  if (!profile) {
+    dispatch(fetchProfile());
+  }
+}, [dispatch, profile]);
 
-    setUsername(storedUser.username || "")
-    setProfile({
-      username: storedUser.username || "",
-      bio: storedUser.bio || "",
-      skills: storedUser.skills || [],
-    })
 
-    // Set greeting based on time of day
-    const hour = new Date().getHours()
-    if (hour < 12) setGreeting("Good morning")
-    else if (hour < 18) setGreeting("Good afternoon")
-    else setGreeting("Good evening")
+useEffect(() => {
+  // Set greeting based on time of day
+  const hour = new Date().getHours();
+  if (hour < 12) setGreeting("Good morning");
+  else if (hour < 18) setGreeting("Good afternoon");
+  else setGreeting("Good evening");
 
-    // Fetch stats from backend
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem("token")
-        const res = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        setStats(res.data)
-      } catch (err) {
-        console.error("Failed to fetch stats", err)
-      }
+  // Fetch stats from backend
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/users/stats`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStats(res.data);
+    } catch (err) {
+      console.error("Failed to fetch stats", err);
     }
+  };
 
-    fetchStats()
-  }, [])
+  fetchStats();
+}, []); 
+
 
   const handleProfileSave = async (updatedProfile) => {
     try {
-      const response = await axios.put(
-        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`,
-        updatedProfile,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      )
-
-      setProfile(response.data)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
-      window.location.reload()
+      await dispatch(updateProfile(updatedProfile)).unwrap()
+      setIsProfileModalOpen(false)
     } catch (error) {
-      console.error("Error updating profile:", error.response ? error.response.data : error)
+      console.error("Error updating profile:", error)
     }
   }
 
@@ -549,7 +534,7 @@ const Dashboard = () => {
               <div className="flex items-center gap-6 mb-6">
                 <div className="relative">
                   <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-lg border border-white/30">
-                    {profile.username?.charAt(0) || username?.charAt(0) || "U"}
+                    {profile?.username?.charAt(0) || "U"}
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white/20 flex items-center justify-center">
                     <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -557,7 +542,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">
-                    {greeting}, {profile.username || username}! 👋
+                    {greeting}, {profile?.username}! 👋
                   </h1>
                   <p className="text-purple-100 text-lg">Ready to connect and learn something new today?</p>
                   <div className="flex items-center gap-4 mt-3">
@@ -620,23 +605,23 @@ const Dashboard = () => {
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Bio</h3>
               <p className="text-gray-900 dark:text-white leading-relaxed">
-                {profile.bio || "No bio added yet. Tell others about yourself!"}
+                {profile?.bio || "No bio added yet. Tell others about yourself!"}
               </p>
             </div>
 
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                Skills ({profile.skills?.length || 0})
+                Skills ({profile?.skills?.length || 0})
               </h3>
               <div className="flex flex-wrap gap-2">
-                {profile && profile.skills && profile.skills.length > 0 ? (
-                  profile.skills.slice(0, 6).map((skill) => <SkillBadge key={skill} skill={skill} />)
+                {profile && profile?.skills && profile?.skills.length > 0 ? (
+                  profile?.skills.slice(0, 6).map((skill) => <SkillBadge key={skill} skill={skill} />)
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 italic">No skills added yet</p>
                 )}
-                {profile.skills && profile.skills.length > 6 && (
+                {profile?.skills && profile?.skills.length > 6 && (
                   <span className="px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 rounded-full text-sm">
-                    +{profile.skills.length - 6} more
+                    +{profile?.skills.length - 6} more
                   </span>
                 )}
               </div>
@@ -715,7 +700,7 @@ const Dashboard = () => {
       <ProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
-        profile={profile}
+        profile={profile || { username: "", bio: "", skills: [] }}
         onSave={handleProfileSave}
       />
     </div>
