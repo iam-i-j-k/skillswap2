@@ -144,7 +144,7 @@ function Footer() {
 
             <div className="text-center md:text-right">
               <p className="text-gray-500 dark:text-gray-400 flex items-center justify-center md:justify-end">
-                Made with <Heart className="w-4 h-4 text-red-500 mx-1" /> by SkillSwap Team
+                Made by SkillSwap Team
               </p>
               <div className="mt-2 flex flex-wrap justify-center md:justify-end gap-6 text-sm">
                 {policyLinks.map((link) => (
