@@ -1,35 +1,107 @@
-"use client"
-
-import React, { useState, useEffect } from "react"
+import React,{ useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Sparkles, Menu, X, Users, Layout, Bell, Check, XIcon as XMark, Moon, Sun, Home } from "lucide-react"
+import { Sparkles, Menu, X, Users, Layout, Bell, Moon, Sun, Home, User, LogOut } from "lucide-react"
 import { useSocket } from "../context/SocketContext"
+import ConnectionRequests from "./ConnectionRequests"
+import { useSelector, useDispatch } from "react-redux"
+import { fetchRequests, addRequest } from "../features/connectionsSlice.js/connectionSlice"
+import { logout } from "../features/auth/authSlice"
 
-export function Header({ connectionRequests, handleAccept, handleDecline }) {
+const Header = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
-      return (
-        localStorage.getItem("darkMode") === "true" ||
-        (!localStorage.getItem("darkMode") && window.matchMedia("(prefers-color-scheme: dark)").matches)
-      )
+      const stored = localStorage.getItem("darkMode")
+      if (stored !== null) {
+        return stored === "true"
+      }
+      return false
     }
-    return true
+    return false
   })
 
+  // Refs for click outside functionality
+  const notificationsRef = useRef(null)
+  const mobileMenuRef = useRef(null)
+
   const socket = useSocket() // Use shared socket
+  const currentUserId = useSelector((state) => state.auth.user?._id)
 
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark")
-      localStorage.setItem("darkMode", "true")
     } else {
       document.documentElement.classList.remove("dark")
-      localStorage.setItem("darkMode", "false")
     }
+    localStorage.setItem("darkMode", darkMode.toString())
   }, [darkMode])
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false)
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!socket || !currentUserId) return
+
+    // Real-time updates for connection requests
+    socket.on("newConnectionRequest", (connection) => {
+      dispatch(addRequest(connection))
+    })
+
+    socket.on("connectionAccepted", () => {
+      dispatch(fetchRequests())
+    })
+
+    socket.on("connectionDeclined", () => {
+      dispatch(fetchRequests())
+    })
+
+    // Clean up listeners on unmount
+    return () => {
+      socket.off("newConnectionRequest")
+      socket.off("connectionAccepted")
+      socket.off("connectionDeclined")
+    }
+  }, [socket, currentUserId, dispatch])
+
+  useEffect(() => {
+    if (socket && currentUserId) {
+      socket.emit("join-connection-rooms", currentUserId)
+    }
+  }, [socket, currentUserId])
+
+  // Always fetch connection requests on header mount
+  const user = useSelector((state) => state.auth.user)
+  useEffect(() => {
+    if (user && user.token) {
+      dispatch(fetchRequests())
+    }
+  }, [user, dispatch])
+
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate("/")
+  }
+
+  const handleProfile = () => {
+    navigate("/profile")
+  }
 
   const menuItems = [
     {
@@ -49,38 +121,10 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
     },
   ]
 
-  const [localConnectionRequests, setLocalConnectionRequests] = useState(connectionRequests)
-
-  React.useEffect(() => {
-    if (!socket) return
-
-    socket.on("new-connection-request", (request) => {
-      setLocalConnectionRequests((prev) => [...prev, request])
-    })
-
-    socket.on("connection-request-sent", (request) => {
-      setLocalConnectionRequests((prev) => [...prev, request])
-    })
-
-    socket.on("request-accepted", (request) => {
-      setLocalConnectionRequests((prev) => prev.map((r) => (r._id === request._id ? request : r)))
-    })
-
-    socket.on("request-rejected", (request) => {
-      setLocalConnectionRequests((prev) => prev.map((r) => (r._id === request._id ? request : r)))
-    })
-
-    return () => {
-      socket.off("new-connection-request")
-      socket.off("connection-request-sent")
-      socket.off("request-accepted")
-      socket.off("request-rejected")
-    }
-  }, [socket])
-
-  useEffect(() => {
-    setLocalConnectionRequests(connectionRequests);
-  }, [connectionRequests]);
+  // Redux connection requests
+  const requests = useSelector((state) => state.connections.requests)
+  const safeRequests = Array.isArray(requests) ? requests : []
+  const [isRequestsOpen, setIsRequestsOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/20 dark:border-white/10 shadow-lg">
@@ -107,97 +151,54 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
               <button
                 key={item.label}
                 onClick={item.onClick}
-                className="flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 group"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium"
               >
-                <item.icon className="w-4 h-4" />
-                <span className="font-medium">{item.label}</span>
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
               </button>
             ))}
 
-            {/* Notifications */}
-            <div className="relative">
+            {/* Bell Button for Connection Requests */}
+            <div className="relative" ref={notificationsRef}>
               <button
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="relative flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+                onClick={() => setIsRequestsOpen((prev) => !prev)}
+                className="relative flex items-center px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300"
               >
-                <div className="relative">
-                  <Bell className="w-4 h-4" />
-                  {localConnectionRequests.length > 0 && (
-                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-medium animate-pulse">
-                      {localConnectionRequests.length}
-                    </span>
-                  )}
-                </div>
-                <span className="font-medium">Notifications</span>
+                <Bell className="w-5 h-5" />
+                {safeRequests.length > 0 && (
+                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-medium animate-pulse">
+                    {safeRequests.length}
+                  </span>
+                )}
               </button>
-
-              {/* Notifications Dropdown */}
-              {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 py-2 z-50 backdrop-blur-xl">
-                  <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Connection Requests</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage your pending connections</p>
-                  </div>
-
-                  {localConnectionRequests.length === 0 ? (
-                    <div className="px-6 py-8 text-center">
-                      <Bell className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-500 dark:text-gray-400">No new notifications</p>
-                    </div>
-                  ) : (
-                    <div className="max-h-96 overflow-y-auto">
-                      {localConnectionRequests
-                        .filter((req) => req.requester && (req.requester.username || req.requester.email))
-                        .map((request) => (
-                          <div
-                            key={request._id}
-                            className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold flex-shrink-0 shadow-lg">
-                                {request.requester?.username?.charAt(0) || request.requester?.email?.charAt(0) || "?"}
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {request.requester.username}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                  {request.requester.email}
-                                </p>
-
-                                <div className="flex items-center gap-2 mt-3">
-                                  <button
-                                    onClick={() => handleAccept(request._id)}
-                                    className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-medium rounded-full hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
-                                  >
-                                    <Check className="w-3 h-3" />
-                                    Accept
-                                  </button>
-                                  <button
-                                    onClick={() => handleDecline(request._id)}
-                                    className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-200"
-                                  >
-                                    <XMark className="w-3 h-3" />
-                                    Decline
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <ConnectionRequests open={isRequestsOpen} />
             </div>
 
-            {/* Dark Mode Toggle */}
+            {/* Theme Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300"
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            {/* Profile Button */}
+            <button
+              onClick={handleProfile}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300"
+              title="View Profile"
+            >
+              <User className="w-5 h-5" />
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </nav>
 
@@ -220,7 +221,10 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <nav className="md:hidden py-4 px-2 space-y-2 border-t border-gray-200 dark:border-white/10">
+          <nav
+            ref={mobileMenuRef}
+            className="md:hidden py-4 px-2 space-y-2 border-t border-gray-200 dark:border-white/10"
+          >
             {menuItems.map((item) => (
               <button
                 key={item.label}
@@ -247,11 +251,35 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
                 <Bell className="w-5 h-5" />
                 <span className="font-medium">Notifications</span>
               </div>
-              {localConnectionRequests.length > 0 && (
+              {safeRequests.length > 0 && (
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                  {localConnectionRequests.length}
+                  {safeRequests.length}
                 </span>
               )}
+            </button>
+
+            {/* Mobile Profile */}
+            <button
+              onClick={() => {
+                handleProfile()
+                setIsMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 text-gray-700 dark:text-gray-300 text-left"
+            >
+              <User className="w-5 h-5" />
+              <span className="font-medium">Profile</span>
+            </button>
+
+            {/* Mobile Logout */}
+            <button
+              onClick={() => {
+                handleLogout()
+                setIsMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-left"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
             </button>
           </nav>
         )}
@@ -259,3 +287,5 @@ export function Header({ connectionRequests, handleAccept, handleDecline }) {
     </header>
   )
 }
+
+export default Header

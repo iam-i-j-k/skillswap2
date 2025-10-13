@@ -24,15 +24,15 @@ const MessageList = ({
   }, [messages])
 
   return (
-    <div className="h-[500px] overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+    <div className="h-[500px] overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent">
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-4 mx-auto">
               <span className="text-2xl">💬</span>
             </div>
-            <p className="text-slate-400 text-lg">No messages yet</p>
-            <p className="text-slate-500 text-sm">Start the conversation!</p>
+            <p className="text-gray-600 dark:text-slate-400 text-lg">No messages yet</p>
+            <p className="text-gray-500 dark:text-slate-500 text-sm">Start the conversation!</p>
           </div>
         </div>
       ) : (
@@ -45,6 +45,7 @@ const MessageList = ({
               <Message
                 key={msg._id || idx}
                 msg={msg}
+                recipient={recipient}
                 idx={idx}
                 isSentByMe={isSentByMe}
                 isSelected={isSelected}
