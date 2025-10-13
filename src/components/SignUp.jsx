@@ -1,4 +1,3 @@
-
 import React,{ useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
@@ -149,7 +148,7 @@ const SignUp = () => {
   const [customSkill, setCustomSkill] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const navigate = useNavigate()
+  const [showVerifyNotice, setShowVerifyNotice] = useState(false)
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -193,19 +192,16 @@ const SignUp = () => {
       return
     }
 
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`, {
+      await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
         skills: formData.skills,
         bio: formData.bio,
       })
-
-      localStorage.setItem("token", response.data.token)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
-      navigate("/dashboard")
+      setShowVerifyNotice(true)
     } catch (error) {
       setError(error.response?.data?.error || "Registration failed. Please try again.")
     } finally {
@@ -236,7 +232,12 @@ const SignUp = () => {
               <p className="text-sm">{error}</p>
             </div>
           )}
-
+          {showVerifyNotice && (
+            <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-2xl text-green-800 dark:text-green-200 text-center mt-8">
+              <Check className="inline w-6 h-6 mr-2 align-middle" />
+              Check your email to verify your account.
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Username Input */}
             <div className="space-y-2">
@@ -289,6 +290,7 @@ const SignUp = () => {
                   placeholder="••••••••"
                 />
                 <button
+                  tabIndex={-1}
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -315,6 +317,7 @@ const SignUp = () => {
                   placeholder="••••••••"
                 />
                 <button
+                  tabIndex={-1}
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -434,6 +437,20 @@ const SignUp = () => {
             Already have an account?{' '}
             <Link to="/login" className="font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors">
               Sign In
+            </Link>
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            By creating an account, you agree to our{' '}
+            <Link to="/terms" className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              Privacy Policy
             </Link>
           </p>
         </div>

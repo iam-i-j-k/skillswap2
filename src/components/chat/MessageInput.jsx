@@ -38,7 +38,7 @@ const MessageInput = ({
     <div className="flex items-end gap-3">
       <div className="flex-1 relative">
         <textarea
-          className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+          className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent"
           placeholder="Type your message..."
           value={input}
           onChange={onInputChange}
@@ -52,8 +52,9 @@ const MessageInput = ({
         />
 
         <button
+          tabIndex={-1}
           onClick={() => setShowEmoji(!showEmoji)}
-          className="absolute right-3 bottom-4 p-1 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-yellow-400"
+          className="absolute right-3 bottom-4 p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition-colors text-gray-500 dark:text-slate-400 hover:text-yellow-500 dark:hover:text-yellow-400"
         >
           <Smile className="w-5 h-5" />
         </button>

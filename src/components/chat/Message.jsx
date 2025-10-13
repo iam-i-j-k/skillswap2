@@ -5,6 +5,7 @@ import { Edit3, Trash2, Download } from "lucide-react"
 
 const Message = ({
   msg,
+  recipient,
   idx,
   isSentByMe,
   isSelected,
@@ -31,7 +32,7 @@ const Message = ({
         {/* Avatar for received messages */}
         {!isSentByMe && (
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mb-1">
-            {msg.senderName?.charAt(0) || "U"}
+            {recipient.username?.charAt(0) || "U"}
           </div>
         )}
 
@@ -41,7 +42,7 @@ const Message = ({
             className={`relative px-4 py-3 rounded-3xl shadow-lg ${
               isSentByMe
                 ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-br-lg"
-                : "bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-bl-lg"
+                : "bg-white dark:bg-slate-700 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-bl-lg"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -83,7 +84,11 @@ const Message = ({
                       href={msg.file.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
+                      className={`inline-flex items-center gap-2 p-3 rounded-2xl transition-colors ${
+                        isSentByMe
+                          ? "bg-white/10 hover:bg-white/20"
+                          : "bg-gray-100 dark:bg-slate-600 hover:bg-gray-200 dark:hover:bg-slate-500"
+                      }`}
                       download={msg.file.originalName || true}
                     >
                       <Download className="w-4 h-4" />
@@ -116,7 +121,9 @@ const Message = ({
 
             {/* Message Status & Time */}
             <div
-              className={`flex items-center justify-between mt-2 text-xs ${isSentByMe ? "text-white/70" : "text-slate-400"}`}
+              className={`flex items-center justify-between mt-2 text-xs ${
+                isSentByMe ? "text-white/70" : "text-gray-500 dark:text-gray-400"
+              }`}
             >
               <span>
                 {msg.createdAt &&
@@ -131,7 +138,7 @@ const Message = ({
             {/* Reaction Picker */}
             {isSelected && (
               <div className="absolute z-50 top-full mt-2 right-0 w-[280px] sm:w-[320px]">
-                <div className="bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl max-h-[350px] overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl max-h-[350px] overflow-hidden">
                   <Picker
                     data={data}
                     onEmojiSelect={(emoji) => {
@@ -140,15 +147,14 @@ const Message = ({
                     }}
                     previewPosition="none"
                     skinTonePosition="none"
-                    theme="dark"
-                    perLine={7} // Adjusts number of emojis per row
-                    maxFrequentRows={1} // Optional: keeps frequent emojis compact
+                    theme="auto"
+                    perLine={7}
+                    maxFrequentRows={1}
                     navPosition="top"
                   />
                 </div>
               </div>
             )}
-
           </div>
 
           {/* Edit Input */}
@@ -166,7 +172,7 @@ const Message = ({
                     setEditText(msg.text)
                   }
                 }}
-                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-white/20 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 autoFocus
               />
               <button
@@ -188,7 +194,7 @@ const Message = ({
                   setEditing(null)
                   setEditText(msg.text)
                 }}
-                className="px-4 py-2 bg-slate-600 text-white rounded-2xl hover:bg-slate-700 transition-colors"
+                className="px-4 py-2 bg-gray-500 dark:bg-slate-600 text-white rounded-2xl hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>
@@ -205,7 +211,7 @@ const Message = ({
                 setEditing(msg._id)
                 setEditText(msg.text)
               }}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-yellow-400"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors text-gray-500 dark:text-slate-400 hover:text-yellow-500 dark:hover:text-yellow-400"
               title="Edit message"
             >
               <Edit3 className="w-4 h-4" />
@@ -215,7 +221,7 @@ const Message = ({
                 e.stopPropagation()
                 onDelete(msg._id)
               }}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-red-400"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors text-gray-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400"
               title="Delete message"
             >
               <Trash2 className="w-4 h-4" />
