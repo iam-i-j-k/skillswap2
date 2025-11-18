@@ -1,6 +1,6 @@
-import React,{ useEffect, useRef } from "react"
-import Message from "./Message"
-import TypingIndicator from "../TypingIndicator"
+import React, { useEffect, useRef, useState } from "react";
+import Message from "./Message";
+import TypingIndicator from "../TypingIndicator";
 
 const MessageList = ({
   messages,
@@ -17,39 +17,87 @@ const MessageList = ({
   isTyping,
   recipient,
 }) => {
-  const messagesEndRef = useRef(null)
+  const listRef = useRef(null);
+  const bottomRef = useRef(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+
+  // -------------------------------
+  // Handle scroll events
+  // -------------------------------
+  const handleScroll = () => {
+    const el = listRef.current;
+    if (!el) return;
+
+    const nearBottom =
+      el.scrollTop + el.clientHeight >= el.scrollHeight - 80;
+
+    setAutoScroll(nearBottom);
+
+    el._prevScrollTop = el.scrollTop;
+    el._prevScrollHeight = el.scrollHeight;
+  };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    const el = listRef.current;
+    if (!el) return;
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // -------------------------------
+  // On new messages → restore or scroll bottom
+  // -------------------------------
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+
+    if (autoScroll) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    const prevHeight = el._prevScrollHeight || 0;
+    const prevTop = el._prevScrollTop || 0;
+    const newHeight = el.scrollHeight;
+
+    const diff = newHeight - prevHeight;
+    if (diff !== 0) {
+      el.scrollTop = prevTop + diff;
+    }
+
+    el._prevScrollHeight = el.scrollHeight;
+    el._prevScrollTop = el.scrollTop;
+  }, [messages]); // <-- only messages, not autoScroll
 
   return (
-    <div className="h-[500px] overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-white/20 scrollbar-track-transparent">
+    <div
+      ref={listRef}
+      className="h-full overflow-y-auto px-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-400 no-scrollbar"
+    >
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-              <span className="text-2xl">💬</span>
-            </div>
-            <p className="text-gray-600 dark:text-slate-400 text-lg">No messages yet</p>
-            <p className="text-gray-500 dark:text-slate-500 text-sm">Start the conversation!</p>
-          </div>
+          <p className="text-gray-500">Start the conversation!</p>
         </div>
       ) : (
         <>
           {messages.map((msg, idx) => {
-            const isSentByMe = msg.sender === currentUser._id
-            const isSelected = selectedMessageId === msg._id
+            const isSentByMe = msg.sender === currentUser._id;
+            const isSelected =
+              selectedMessageId === (msg._id || msg.clientId);
 
             return (
               <Message
-                key={msg._id || idx}
+                key={msg._id || msg.clientId || idx}
                 msg={msg}
                 recipient={recipient}
-                idx={idx}
                 isSentByMe={isSentByMe}
                 isSelected={isSelected}
-                onMessageClick={setSelectedMessageId}
+                onMessageClick={(id) =>
+                  setSelectedMessageId((prev) =>
+                    prev === id ? null : id
+                  )
+                }
                 onReact={handleReact}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
@@ -59,14 +107,18 @@ const MessageList = ({
                 setEditText={setEditText}
                 currentUser={currentUser}
               />
-            )
+            );
           })}
-          {isTyping && <TypingIndicator isTyping={isTyping} recipient={recipient} />}
-          <div ref={messagesEndRef} />
+
+          {isTyping && (
+            <TypingIndicator isTyping={isTyping} recipient={recipient} />
+          )}
+
+          <div ref={bottomRef} />
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default MessageList
+export default MessageList;

@@ -27,11 +27,14 @@ import ResetPassword from "./components/ResetPassword"
 import TermsOfService from "./components/TermsOfService"
 import PrivacyPolicy from "./components/PrivacyPolicy"
 import ScrollToTop from "./components/ScrollToTop"
+import CheckConnection from "./components/CheckConnection"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFirstLoad, setIsFirstLoad] = useState(true)
-  const token = useSelector((state) => state.auth.token);
+  const token = useSelector(state => state.auth.token);
+
+  if (token === undefined) return null; // don't render anything yet
 
   useEffect(() => {
     // Check if this is the first load
@@ -72,7 +75,12 @@ function AppWithRouter({ token }) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      {location.pathname !== "/login" && location.pathname !== "/signup" && (<Header />)}
+      <CheckConnection />
+      {location.pathname !== "/login" &&
+      location.pathname !== "/signup" &&
+      !location.pathname.startsWith("/chat/") && (
+        <Header />
+      )}
       <main>
         <Routes>
           <Route path="/profile" element={<Profile />} />
@@ -140,7 +148,7 @@ function AppWithRouter({ token }) {
       </main>
       <ScrollToTop />
       <Toaster />
-      {location.pathname !== "/login" && location.pathname !== "/signup" && (<Footer />)}
+      {!token && location.pathname !== "/login" && location.pathname !== "/signup" &&  (<Footer />)}
     </div>
   );
 }

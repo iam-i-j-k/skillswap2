@@ -1,78 +1,58 @@
-import { useDispatch } from "react-redux"
-import { setCredentials } from "../features/auth/authSlice"
-import React,{ useState } from "react"
-import axios from "axios"
-import { useNavigate, Link } from "react-router-dom"
-import { Loader2, Mail, Lock, AlertCircle, Eye, EyeOff, Sparkles } from "lucide-react"
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../features/auth/authSlice";
+import React, { useState } from "react";
+import { useLoginMutation } from "../services/authApi";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Loader2,
+  Mail,
+  Lock,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Sparkles,
+} from "lucide-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-const dispatch = useDispatch()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError("")
-  setIsLoading(true)
+  const [login, { isLoading }] = useLoginMutation();
 
-  try {
-    const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/login`, {
-      email,
-      password,
-    },
-    {
-      headers: {
-      "x-api-key": import.meta.env.VITE_REACT_APP_API_KEY,
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const res = await login({ email, password }).unwrap();
+      dispatch(setCredentials(res));
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err?.data?.message || "Invalid credentials");
     }
-    }
-  )
-
-    // Save to localStorage (optional)
-    localStorage.setItem("user", JSON.stringify(response.data.user))
-    localStorage.setItem("token", response.data.token)
-
-    // ✅ Dispatch Redux credentials
-    dispatch(setCredentials({
-      user: response.data.user,
-      token: response.data.token
-    }))
-
-    // ✅ THEN navigate
-    navigate("/dashboard")
-  } catch (error) {
-    if (error.response) {
-      if (error.response.status === 401) {
-        setError("Incorrect email or password. Please try again.")
-      } else {
-        setError(error.response?.data?.error || "Login failed. Please try again later.")
-      }
-    } else {
-      setError("Something went wrong. Please check your internet connection and try again.")
-    }
-  } finally {
-    setIsLoading(false)
-  }
-}
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
-      {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
-      
+
       <div className="relative w-full max-w-md">
-        {/* Logo Section */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-xl">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h1>
-          <p className="text-gray-600 dark:text-gray-400">Sign in to continue your journey</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Welcome Back
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Sign in to continue your journey
+          </p>
         </div>
 
         {/* Login Card */}
@@ -85,9 +65,12 @@ const handleSubmit = async (e) => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Input */}
+            {/* Email */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -97,18 +80,21 @@ const handleSubmit = async (e) => {
                 <input
                   id="email"
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="you@example.com"
-                  required
                 />
               </div>
             </div>
 
-            {/* Password Input */}
+            {/* Password */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Password
               </label>
               <div className="relative">
@@ -118,23 +104,27 @@ const handleSubmit = async (e) => {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-12 pr-12 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
-                  required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
@@ -146,23 +136,26 @@ const handleSubmit = async (e) => {
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </button>
           </form>
 
           {/* Forgot Password */}
           <div className="mt-6 text-center">
-            <a href="/forgot-password" className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+            <a
+              href="/forgot-password"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+            >
               Forgot your password?
             </a>
           </div>
         </div>
 
-        {/* Sign Up Link */}
+        {/* Sign Up */}
         <div className="mt-8 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link
               to="/signup"
               className="font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors"
@@ -175,19 +168,25 @@ const handleSubmit = async (e) => {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            By signing in, you agree to our{' '}
-            <Link to="/terms" className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            By signing in, you agree to our{" "}
+            <Link
+              to="/terms"
+              className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
               Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            </Link>{" "}
+            and{" "}
+            <Link
+              to="/privacy"
+              className="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
               Privacy Policy
             </Link>
           </p>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

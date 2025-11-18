@@ -1,7 +1,9 @@
 import React,{ useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import axios from "axios"
+import { useRegisterMutation } from "../services/authApi";
+import { setCredentials } from "../features/auth/authSlice"
 import { X, Check, ChevronDown, Loader2, Eye, EyeOff, Sparkles, Plus } from "lucide-react"
+import { useDispatch } from "react-redux";
 
 const PREDEFINED_SKILLS = [
   // Programming & Development
@@ -143,12 +145,13 @@ const SignUp = () => {
     bio: "",
   })
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false)
   const [customSkill, setCustomSkill] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showVerifyNotice, setShowVerifyNotice] = useState(false)
+  const dispatch = useDispatch();
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -192,20 +195,11 @@ const SignUp = () => {
       return
     }
 
-    setIsLoading(true)
     try {
-      await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`, {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        skills: formData.skills,
-        bio: formData.bio,
-      })
-      setShowVerifyNotice(true)
-    } catch (error) {
-      setError(error.response?.data?.error || "Registration failed. Please try again.")
-    } finally {
-      setIsLoading(false)
+      const res = await registerUser(form).unwrap();
+      dispatch(setCredentials(res));
+    } catch (err) {
+      console.error(err);
     }
   }
 
