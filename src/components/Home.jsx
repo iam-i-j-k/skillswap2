@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Users, Loader2, Search, UserPlus, Award, MessageSquare } from 'lucide-react';
+import { Users, Loader2, Search, UserPlus, Award, MessageSquare } from "lucide-react";
 
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -15,49 +15,34 @@ import {
 
 import { useSocket } from "../context/SocketContext";
 
-// Marquee CSS (same)
-const marqueeStyle = `
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-  }
-
-  .marquee-text {
-    display: inline-block;
-    animation: marquee 8s linear infinite;
-    white-space: nowrap;
-    padding-right: 20px;
-  }
-
-  .marquee-container {
-    overflow: hidden;
-  }
-`;
-
-
-// ======================================================
-// USER CARD COMPONENT
-// ======================================================
 const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
   const needsMarquee = (text, limit) => text && text.length > limit;
 
   return (
     <div
       className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 
-      rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow duration-300 h-48"
+      rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow duration-300 h-52 sm:h-48"
     >
-
       {/* Top Section */}
       <div className="flex items-start gap-4">
         {/* Avatar */}
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white 
-        flex items-center justify-center font-semibold text-lg">
-          {user.username?.charAt(0)?.toUpperCase()}
-        </div>
+        {user.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.username}
+            className="w-14 h-14 rounded-xl object-cover border border-gray-200 dark:border-slate-700 flex-shrink-0"
+          />
+        ) : (
+          <div
+            className="w-14 h-14 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white 
+            flex items-center justify-center font-semibold text-lg flex-shrink-0"
+          >
+            {user.username?.charAt(0)?.toUpperCase()}
+          </div>
+        )}
 
         {/* User Info */}
         <div className="flex-1 min-w-0">
-
           {/* Username */}
           {needsMarquee(user.username, 18) ? (
             <div className="marquee-container h-6">
@@ -86,7 +71,6 @@ const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
 
           {/* Skills — ONE LINE ONLY — max 2 skills */}
           <div className="flex items-center gap-2 mt-3 overflow-hidden whitespace-nowrap">
-
             {user.skills?.slice(0, 2).map((s) => (
               <span
                 key={s}
@@ -98,21 +82,25 @@ const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
             ))}
 
             {user.skills?.length > 2 && (
-              <span className="px-2 py-1 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 
-              rounded-lg text-xs font-medium">
+              <span
+                className="px-2 py-1 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 
+              rounded-lg text-xs font-medium"
+              >
                 +{user.skills.length - 2} more
               </span>
             )}
-
           </div>
         </div>
       </div>
 
-      {/* Button Section - Bottom */}
+      {/* Button Section */}
       <div className="mt-4">
         {isConnected ? (
           <button
-            onClick={(e) => { e.stopPropagation(); onRemove(user); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(user);
+            }}
             className="w-full py-2 text-sm bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 
             rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
           >
@@ -128,7 +116,10 @@ const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
           </button>
         ) : (
           <button
-            onClick={(e) => { e.stopPropagation(); onConnect(user); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onConnect(user);
+            }}
             className="w-full flex items-center justify-center gap-2 py-2 text-sm 
             bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 
             text-white rounded-lg transition-all"
@@ -137,19 +128,12 @@ const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
           </button>
         )}
       </div>
-
     </div>
   );
 };
 
-
-
-// ======================================================
-// HOME PAGE
-// ======================================================
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
   const navigate = useNavigate();
   const socket = useSocket();
   const currentUserId = useSelector((s) => s.auth.user?._id);
@@ -183,7 +167,6 @@ const Home = () => {
     );
   }, [matchesData]);
 
-
   // Filtered Users
   const filteredUsers = useMemo(() => {
     return users.filter(
@@ -197,9 +180,7 @@ const Home = () => {
   }, [users, searchQuery]);
 
   const isPending = (id) => outgoingRequests.includes(id);
-
-  const isConnected = (id) =>
-    connectedUsers.some((u) => u.user?._id === id);
+  const isConnected = (id) => connectedUsers.some((u) => u.user?._id === id);
 
   const onConnect = async (user) => {
     try {
@@ -213,7 +194,6 @@ const Home = () => {
   const onRemove = async (user) => {
     const match = connectedUsers.find((c) => c.user?._id === user._id);
     if (!match) return;
-
     try {
       await removeConnect(match.connectionId).unwrap();
       toast.success("Connection Removed!");
@@ -221,7 +201,6 @@ const Home = () => {
       toast.error(err?.data?.error || "Something went wrong");
     }
   };
-
 
   // Stats
   const statsData = [
@@ -242,39 +221,36 @@ const Home = () => {
     },
   ];
 
-
   return (
     <div className="bg-gray-50 dark:bg-slate-900 min-h-screen">
       <style>
-  {`
-    @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
+        {`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+          }
 
-    .marquee-text {
-      display: inline-block;
-      white-space: nowrap;
-      padding-right: 20px;
-      animation: marquee 8s linear infinite;
-      animation-play-state: paused;
-    }
+          .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 20px;
+            animation: marquee 8s linear infinite;
+            animation-play-state: paused;
+          }
 
-    /* RUN marquee only when hovering the container */
-    .marquee-container:hover .marquee-text {
-      animation-play-state: running;
-    }
+          .marquee-container:hover .marquee-text {
+            animation-play-state: running;
+          }
 
-    .marquee-container {
-      overflow: hidden;
-      width: 100%;
-    }
-  `}
-</style>
-
+          .marquee-container {
+            overflow: hidden;
+            width: 100%;
+          }
+        `}
+      </style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
+        {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Discover People
@@ -344,7 +320,6 @@ const Home = () => {
             ))}
           </div>
         )}
-
       </div>
     </div>
   );

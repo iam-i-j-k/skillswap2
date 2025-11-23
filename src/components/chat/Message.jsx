@@ -34,100 +34,91 @@ const Message = ({
     onMessageClick(messageId);
   };
 
-const renderFile = () => {
-  if (!file?.url) return null;
+  const renderFile = () => {
+    if (!file?.url) return null;
 
-  const downloadFile = () => {
-    // Ensure we ALWAYS keep the extension
-    let filename = file.originalName || "file";
+    const downloadFile = () => {
+      let filename = file.originalName || "file";
+      if (!filename.includes(".")) {
+        const ext = file.mimetype?.split("/")[1] || "";
+        if (ext) filename += "." + ext;
+      }
+      const link = document.createElement("a");
+      link.href = file.url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
 
-    // If filename has no extension, try to extract from mimetype
-    if (!filename.includes(".")) {
-      const ext = file.mimetype?.split("/")[1] || "";
-      if (ext) filename += "." + ext;
+    const type = file.mimetype || "";
+
+    // ✅ Image
+    if (type.startsWith("image/")) {
+      return (
+        <div className="relative group max-w-full sm:max-w-xs">
+          <img
+            src={file.url}
+            alt={file.originalName}
+            className="w-full max-h-60 rounded-xl cursor-pointer object-cover"
+            onClick={downloadFile}
+          />
+          <button
+            onClick={downloadFile}
+            className="absolute bottom-2 right-2 px-3 py-1 bg-black/60 text-white text-xs rounded-lg shadow opacity-0 group-hover:opacity-100 transition"
+          >
+            Download
+          </button>
+        </div>
+      );
     }
 
-    const link = document.createElement("a");
-    link.href = file.url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // ✅ Video
+    if (type.startsWith("video/")) {
+      return (
+        <div className="relative max-w-full sm:max-w-xs">
+          <video
+            src={file.url}
+            controls
+            className="w-full max-h-60 rounded-xl object-cover"
+          />
+          <button
+            onClick={downloadFile}
+            className="mt-2 inline-flex items-center gap-2 text-sm text-blue-500 hover:underline"
+          >
+            <Download className="w-4 h-4" /> Download Video
+          </button>
+        </div>
+      );
+    }
+
+    // ✅ Other files
+    return (
+      <div
+        onClick={downloadFile}
+        className={`cursor-pointer p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-3 
+          transition border text-sm sm:text-base
+          ${
+            isSentByMe
+              ? "bg-white/20 hover:bg-white/30 text-white border-white/30"
+              : "bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 border-gray-300 dark:border-white/10 text-gray-900 dark:text-white"
+          }
+        `}
+      >
+        <Download className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+        <div className="flex flex-col truncate max-w-[220px] sm:max-w-[300px]">
+          <span className="font-medium truncate">{file.originalName || "Download file"}</span>
+          {file.size && (
+            <span className="text-xs opacity-70">
+              {file.size > 1024 * 1024
+                ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                : `${(file.size / 1024).toFixed(2)} KB`}
+            </span>
+          )}
+        </div>
+      </div>
+    );
   };
-
-
-  const type = file.mimetype || "";
-
-  // IMAGE preview
-  if (type.startsWith("image/")) {
-    return (
-      <div className="relative group">
-        <img
-          src={file.url}
-          alt={file.originalName}
-          className="max-w-full max-h-60 rounded-xl cursor-pointer"
-          onClick={downloadFile}
-        />
-        <button
-          onClick={downloadFile}
-          className="absolute bottom-2 right-2 px-3 py-1 bg-black/60 text-white text-xs rounded-lg shadow opacity-0 group-hover:opacity-100 transition"
-        >
-          Download
-        </button>
-      </div>
-    );
-  }
-
-  // VIDEO preview
-  if (type.startsWith("video/")) {
-    return (
-      <div className="relative">
-        <video
-          src={file.url}
-          controls
-          className="max-w-full max-h-60 rounded-xl"
-        />
-        <button
-          onClick={downloadFile}
-          className="mt-2 inline-flex items-center gap-2 text-sm text-blue-500 hover:underline"
-        >
-          <Download className="w-4 h-4" /> Download Video
-        </button>
-      </div>
-    );
-  }
-
-  // ANY OTHER FILE (docx/pdf/zip etc)
-  return (
-    <div
-      onClick={downloadFile}
-      className={`
-        cursor-pointer p-4 rounded-2xl flex items-center gap-3
-        transition border
-        ${
-          isSentByMe
-            ? "bg-white/20 hover:bg-white/30 text-white border-white/30"
-            : "bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 border-gray-300 dark:border-white/10 text-gray-900 dark:text-white"
-        }
-      `}
-    >
-      <Download className="w-6 h-6" />
-      <div className="flex flex-col">
-        <span className="font-medium truncate max-w-[200px]">
-          {file.originalName || "Download file"}
-        </span>
-        {file.size && (
-          <span className="text-xs opacity-70">
-            {file.size > 1024 * 1024
-              ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-              : `${(file.size / 1024).toFixed(2)} KB`}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-};
-
 
   const renderStatus = () => {
     if (!isSentByMe) return null;
@@ -142,25 +133,30 @@ const renderFile = () => {
 
   return (
     <div
-      className={`flex ${isSentByMe ? "justify-end" : "justify-start"} group`}
+      className={`flex ${isSentByMe ? "justify-end" : "justify-start"} group px-2 sm:px-0`}
       onClick={handleSelect}
     >
-      <div className="flex items-end gap-2 max-w-xs lg:max-w-md">
+      <div className="flex items-end gap-2 sm:gap-3 max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
         {!isSentByMe && (
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md">
+          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0">
             {avatarLetter.toUpperCase()}
           </div>
         )}
 
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full">
+          {/* Message Bubble */}
           <div
-            className={`relative px-4 py-3 rounded-3xl shadow-md hover:shadow-lg animate-[fadeIn_0.2s_ease-out] ${bubbleClasses} ${isSelected ? "ring-2 ring-purple-400" : ""}`}
+            className={`relative px-4 py-3 rounded-3xl shadow-md hover:shadow-lg animate-[fadeIn_0.2s_ease-out] ${bubbleClasses} ${
+              isSelected ? "ring-2 ring-purple-400" : ""
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             {msg.text && (
-              <div className="break-words">
+              <div className="break-words text-sm sm:text-base leading-snug sm:leading-normal">
                 {msg.text}
-                {isEdited && <span className="ml-2 text-xs opacity-70">(edited)</span>}
+                {isEdited && (
+                  <span className="ml-2 text-xs opacity-70">(edited)</span>
+                )}
               </div>
             )}
 
@@ -168,20 +164,34 @@ const renderFile = () => {
 
             {msg.reactions?.length > 0 && (
               <div className="flex gap-1 mt-2 flex-wrap">
-                {msg.reactions.map((r, i) => <span key={i} className="text-lg">{r.emoji}</span>)}
+                {msg.reactions.map((r, i) => (
+                  <span key={i} className="text-lg">
+                    {r.emoji}
+                  </span>
+                ))}
               </div>
             )}
 
-            <div className={`flex justify-between mt-2 text-xs ${isSentByMe ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
+            {/* Timestamp */}
+            <div
+              className={`flex justify-between mt-2 text-[10px] sm:text-xs ${
+                isSentByMe ? "text-white/70" : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
               <span>
-                {msg.createdAt && new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {msg.createdAt &&
+                  new Date(msg.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
               </span>
               {renderStatus()}
             </div>
 
+            {/* Emoji Picker */}
             {isSelected && (
-              <div className="absolute z-50 top-full mt-2 right-0 w-[260px] sm:w-[300px]">
-                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl">
+              <div className="absolute z-50 top-full mt-2 right-0 w-[220px] sm:w-[300px] max-w-[95vw]">
+                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl overflow-hidden">
                   <Picker
                     data={data}
                     previewPosition="none"
@@ -200,7 +210,10 @@ const renderFile = () => {
 
           {/* Edit input */}
           {editing === messageId && (
-            <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex flex-col sm:flex-row gap-2 mt-2"
+              onClick={(e) => e.stopPropagation()}
+            >
               <input
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
@@ -216,32 +229,40 @@ const renderFile = () => {
                     setEditText(msg.text);
                   }
                 }}
-                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-white/20 rounded-2xl text-gray-900 dark:text-white"
+                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-white/20 rounded-2xl text-gray-900 dark:text-white text-sm sm:text-base"
                 autoFocus
               />
 
-              <button
-                type="button"
-                onClick={() => { if (editText.trim()) onEdit && onEdit(messageId, editText); setEditing(null); }}
-                className="px-3 py-2 bg-green-500 text-white rounded-xl"
-              >
-                Save
-              </button>
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editText.trim()) onEdit && onEdit(messageId, editText);
+                    setEditing(null);
+                  }}
+                  className="px-3 py-2 bg-green-500 text-white rounded-xl text-sm sm:text-base"
+                >
+                  Save
+                </button>
 
-              <button
-                type="button"
-                onClick={() => { setEditing(null); setEditText(msg.text); }}
-                className="px-3 py-2 bg-gray-500 dark:bg-slate-600 text-white rounded-xl"
-              >
-                Cancel
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(null);
+                    setEditText(msg.text);
+                  }}
+                  className="px-3 py-2 bg-gray-500 dark:bg-slate-600 text-white rounded-xl text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Edit/Delete for sender */}
+        {/* Edit/Delete */}
         {isSentByMe && (
-          <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition ml-2">
+          <div className="hidden sm:flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition ml-2">
             <button
               type="button"
               onClick={(e) => {
