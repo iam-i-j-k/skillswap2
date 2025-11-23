@@ -8,7 +8,7 @@ import {
   useClearChatMutation,
 } from "../services/chatApi";
 
-import { useGetUserQuery } from "../services/usersApi"; // ✅ Added
+import { useGetUserQuery } from "../services/usersApi";
 
 import MessageList from "./chat/MessageList";
 import MessageInput from "./chat/MessageInput";
@@ -18,6 +18,7 @@ import SwapModal from "./chat/SwapModal";
 import ResourceModal from "./chat/ResourceModal";
 
 import { ArrowLeft, Moon, Phone, Sun, Video } from "lucide-react";
+import { useWebRTC } from "../webrtc/useWebRTC";
 
 const Chat = () => {
   const { id: chatUserId } = useParams();
@@ -25,6 +26,10 @@ const Chat = () => {
   const socket = useSocket();
   const navigate = useNavigate();
 
+  const [callOpen, setCallOpen] = useState(false);
+  const roomName = `SkillSwap-${
+    [currentUser._id, chatUserId].sort().join("-")
+  }`;
   const [messages, setMessages] = useState([]);
   const [recipient, setRecipient] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -37,6 +42,22 @@ const Chat = () => {
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
   );
+
+  const {
+    stream,
+    remoteStream,
+    callUser,
+    answerCall,
+    endCall,
+    incomingCall,
+    setIncomingCall,
+    isCallActive,
+    callStatus,
+    localVideoRef,
+    remoteVideoRef,
+  } = useWebRTC(socket, currentUser._id, chatUserId);
+
+
 
   const typingTimeout = useRef();
 
@@ -228,7 +249,7 @@ const Chat = () => {
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate("/matches")}
+            onClick={() => navigate("1")}
             className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
           >
             <ArrowLeft className="w-6 h-6 text-gray-800 dark:text-white" />
@@ -269,6 +290,7 @@ const Chat = () => {
           </button>
 
           <button
+            onClick={callUser}
             className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
             title="Video Call"
           >
@@ -373,6 +395,87 @@ const Chat = () => {
         userSkills={currentUser?.skills}
         recipientSkills={recipient?.skills}
       />
+
+      {/* Incoming Call Popup */}
+      {incomingCall && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/70 z-50">
+          <h2 className="text-white text-lg mb-4">Incoming video call from {recipient?.username}</h2>
+          <div className="flex gap-4">
+            <button
+              onClick={answerCall}
+              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => {
+                setIncomingCall(false);
+                socket.emit("rejectCall", { to: chatUserId });
+              }}
+              className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Video Call Interface */}
+      {(isCallActive || callStatus === 'calling') && (
+        <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-40">
+          {/* Remote Video (Main) */}
+          {remoteStream ? (
+            <div className="w-full h-full relative">
+              <video
+                autoPlay
+                playsInline
+                ref={remoteVideoRef}
+                className="w-full h-full object-cover bg-black"
+                style={{ display: 'block' }}
+              />
+              <div className="absolute top-4 left-4 text-white bg-black/50 p-2 rounded">
+                Remote Video
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-900">
+              <div className="text-white text-center">
+                <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Video className="w-8 h-8" />
+                </div>
+                <p>{callStatus === 'calling' ? 'Calling...' : 'Waiting for video...'}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Local Video (Picture-in-picture) */}
+          {stream && (
+            <div className="absolute bottom-4 right-4 w-48 h-36 bg-black rounded-lg border-2 border-white shadow-lg">
+              <video
+                autoPlay
+                muted
+                playsInline
+                ref={localVideoRef}
+                className="w-full h-full object-cover rounded-lg"
+                style={{ display: 'block' }}
+              />
+              <div className="absolute top-1 left-1 text-white text-xs bg-black/50 p-1 rounded">
+                You
+              </div>
+            </div>
+          )}
+
+          {/* Call Controls */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <button
+              onClick={endCall}
+              className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 flex items-center gap-2"
+            >
+              <span>End Call</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

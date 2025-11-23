@@ -97,20 +97,22 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-12 overflow-auto">
-      <div className="relative w-full h-40 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600">
+      {/* COVER PHOTO */}
+      <div className="relative w-full h-40 sm:h-52 md:h-64 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600">
         {edited.coverPhoto && (
           <img
             src={edited.coverPhoto || "/placeholder.svg"}
             className="w-full h-full object-cover"
             alt="cover"
+            onError={(e) => (e.target.src = "/placeholder.svg")}
           />
         )}
 
         <button
           onClick={() => coverRef.current.click()}
-          className="absolute top-4 right-4 bg-white dark:bg-slate-800 p-2 rounded-lg shadow hover:shadow-md transition-shadow"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-lg shadow hover:shadow-md transition"
         >
-          <Camera className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
         </button>
 
         <input
@@ -122,20 +124,22 @@ export default function Profile() {
         />
       </div>
 
-      <div className="max-w-4xl mx-auto -mt-12 px-4 mb-12">
-        <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
-          <div className="flex items-end gap-6 mb-6">
-            {/* Avatar */}
+      {/* MAIN PROFILE CARD */}
+      <div className="max-w-5xl mx-auto -mt-14 sm:-mt-16 md:-mt-10 px-3 sm:px-6 mb-12">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-8">
+          {/* Avatar Section */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6">
             <div className="relative">
-              <div className="w-24 h-24 mt-10 rounded-lg overflow-hidden shadow border-2 border-white dark:border-slate-800 bg-white">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shadow border-2 border-white dark:border-slate-800 bg-white">
                 {edited.avatar ? (
                   <img
                     src={edited.avatar || "/placeholder.svg"}
                     alt="avatar"
                     className="w-full h-full object-cover"
+                    onError={(e) => (e.target.src = "/placeholder.svg")}
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold">
+                  <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold">
                     {edited.username.charAt(0)}
                   </div>
                 )}
@@ -143,7 +147,7 @@ export default function Profile() {
 
               <button
                 onClick={() => avatarRef.current.click()}
-                className="absolute -bottom-2 -right-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-2 rounded-lg shadow"
+                className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-2 rounded-full shadow"
               >
                 <Camera className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </button>
@@ -158,70 +162,72 @@ export default function Profile() {
             </div>
 
             {/* Name and Info */}
-            <div className="flex-1">
+            <div className="text-center sm:text-left">
               {isEditing ? (
                 <input
-                  className="text-2xl font-bold bg-gray-50 dark:bg-slate-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 mb-2 w-full text-gray-900 dark:text-white"
+                  className="text-xl sm:text-2xl font-bold bg-gray-50 dark:bg-slate-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 w-full text-gray-900 dark:text-white mb-1"
                   value={edited.username}
-                  onChange={(e) => setEdited({ ...edited, username: e.target.value })}
+                  onChange={(e) =>
+                    setEdited({ ...edited, username: e.target.value })
+                  }
                 />
               ) : (
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-1">
                   {edited.username}
                 </h1>
               )}
 
-              <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" /> {edited.email}
+              <div className="space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                  <Mail className="w-3 h-3 sm:w-4 sm:h-4" /> {edited.email}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                   Joined {new Date(edited.createdAt).toLocaleDateString()}
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Edit / Save Buttons */}
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all text-sm font-medium"
-                  >
-                    <Check className="w-4 h-4" /> Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEdited(userProfile);
-                      setIsEditing(false);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
-                  >
-                    <X className="w-4 h-4" /> Cancel
-                  </button>
-                </>
-              ) : (
+          {/* Edit/Save Buttons */}
+          <div className="flex justify-center sm:justify-end gap-2">
+            {isEditing ? (
+              <>
                 <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
+                  onClick={handleSave}
+                  className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg text-xs sm:text-sm font-medium"
                 >
-                  <Edit2 className="w-4 h-4" /> Edit
+                  <Check className="w-4 h-4" /> Save
                 </button>
-              )}
-            </div>
+                <button
+                  onClick={() => {
+                    setEdited(userProfile);
+                    setIsEditing(false);
+                  }}
+                  className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 text-xs sm:text-sm font-medium"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 text-xs sm:text-sm font-medium"
+              >
+                <Edit2 className="w-4 h-4" /> Edit
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 space-y-6">
-        {/* Bio Section */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+      {/* OTHER SECTIONS */}
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 space-y-6">
+        {/* Bio */}
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
             About
           </h2>
-
           {isEditing ? (
             <textarea
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white text-sm"
@@ -230,30 +236,25 @@ export default function Profile() {
               onChange={(e) => setEdited({ ...edited, bio: e.target.value })}
             />
           ) : (
-            <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+            <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed">
               {edited.bio}
             </p>
           )}
         </div>
 
-        {/* Skills Section */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+        {/* Skills */}
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
             Skills
           </h2>
 
-          {/* When Editing */}
           {isEditing ? (
-            <div className="space-y-4">
-
-              {/* Skills Chips */}
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex flex-wrap gap-2">
                 {edited.skills.map((s, i) => (
                   <div
                     key={i}
-                    className="px-3 py-1.5 rounded-full flex items-center gap-2
-                      bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/20 
-                      dark:to-pink-500/20 text-purple-700 dark:text-purple-300 text-sm font-medium cursor-pointer"
+                    className="px-3 py-1 rounded-full flex items-center gap-2 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/20 dark:to-pink-500/20 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium"
                   >
                     {s}
                     <button
@@ -264,13 +265,13 @@ export default function Profile() {
                         })
                       }
                     >
-                      <X className="w-4 h-4 text-purple-600 dark:text-purple-300" />
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 ))}
               </div>
 
-              {/* Skill Search + Dropdown */}
+              {/* Skill Search */}
               <div className="relative">
                 <input
                   type="text"
@@ -280,16 +281,11 @@ export default function Profile() {
                     setShowSkillDropdown(true);
                   }}
                   placeholder="Search or add a skill..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 
-                    dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 
-                    dark:text-white text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-700 dark:text-white"
                 />
 
-                {/* SKILL DROPDOWN */}
                 {showSkillDropdown && (
-                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border 
-                    border-gray-200 dark:border-slate-700 rounded-lg max-h-60 overflow-y-auto shadow-lg">
-
+                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg max-h-56 overflow-y-auto shadow-lg">
                     {skillOptions
                       .filter(
                         (s) =>
@@ -305,20 +301,18 @@ export default function Profile() {
                             setSkillSearch("");
                             setShowSkillDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 
-                            dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+                          className="w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
                         >
                           {s}
                         </button>
                       ))}
 
-                    {/* No results */}
                     {skillOptions.filter(
                       (s) =>
                         s.toLowerCase().includes(skillSearch.toLowerCase()) &&
                         !edited.skills.includes(s)
                     ).length === 0 && (
-                      <p className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                      <p className="px-4 py-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         No skills found
                       </p>
                     )}
@@ -327,14 +321,11 @@ export default function Profile() {
               </div>
             </div>
           ) : (
-            /* When NOT editing */
             <div className="flex flex-wrap gap-2">
               {edited.skills.map((s, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-100 
-                    to-pink-100 dark:from-purple-500/20 dark:to-pink-500/20 text-purple-700 
-                    dark:text-purple-300 text-sm font-medium"
+                  className="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-500/20 dark:to-pink-500/20 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium"
                 >
                   {s}
                 </span>
@@ -342,7 +333,6 @@ export default function Profile() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );
