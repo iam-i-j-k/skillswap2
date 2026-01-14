@@ -1,361 +1,363 @@
-import React from "react"
-import { useEffect, useRef, useState } from "react"
-import { useSelector } from "react-redux"
-import { useParams, useNavigate } from "react-router-dom"
-import { useSocket } from "../context/SocketContext"
-import axios from "axios"
-import MessageList from "./chat/MessageList"
-import MessageInput from "./chat/MessageInput"
-import ChatActions from "./chat/ChatActions"
-import EmojiPicker from "./chat/EmojiPicker"
-import SwapModal from "./chat/SwapModal"
-import ResourceModal from "./chat/ResourceModal"
-import { ArrowLeft, Phone, Video, MoreVertical } from "lucide-react"
-import toast from "react-hot-toast"
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
+import { useSocket } from "../context/SocketContext";
+
+import {
+  useGetChatHistoryQuery,
+  useClearChatMutation,
+} from "../services/chatApi";
+
+import { useGetUserQuery } from "../services/usersApi"; // ✅ Added
+
+import MessageList from "./chat/MessageList";
+import MessageInput from "./chat/MessageInput";
+import ChatActions from "./chat/ChatActions";
+import EmojiPicker from "./chat/EmojiPicker";
+import SwapModal from "./chat/SwapModal";
+import ResourceModal from "./chat/ResourceModal";
+
+import { ArrowLeft, Moon, Phone, Sun, Video } from "lucide-react";
 
 const Chat = () => {
-  const { id: chatUserId } = useParams()
-  const currentUser = useSelector((state) => state.auth.user)
-  const token = useSelector((state) => state.auth.token)
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState("")
-  const [recipient, setRecipient] = useState(null)
-  const [activeModal, setActiveModal] = useState(null)
-  const [isTyping, setIsTyping] = useState(false)
-  const [showEmoji, setShowEmoji] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [editText, setEditText] = useState("")
-  const [selectedMessageId, setSelectedMessageId] = useState(null)
-  const typingTimeout = useRef()
-  const socket = useSocket()
-  const navigate = useNavigate()
-  const calendlyLink = "https://calendly.com/irfanjankhan7860"
+  const { id: chatUserId } = useParams();
+  const currentUser = useSelector((state) => state.auth.user);
+  const socket = useSocket();
+  const navigate = useNavigate();
+
+  const [messages, setMessages] = useState([]);
+  const [recipient, setRecipient] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [input, setInput] = useState("");
+  const [activeModal, setActiveModal] = useState(null);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("darkMode") === "true"
+  );
+
+  const typingTimeout = useRef();
+
+  // -----------------------
+  // Load history
+  // -----------------------
+  const { data, refetch } = useGetChatHistoryQuery(chatUserId, {
+    skip: !chatUserId,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+
+  // ✅ Fetch recipient from users endpoint
+  const { data: userData } = useGetUserQuery(chatUserId, {
+    skip: !chatUserId,
+  });
 
   
+  // Optional extra safety net
   useEffect(() => {
-    socket.on("receiveMessage", (message) => {
-      setMessages((prev) => [...prev, message])
-      if (message.text && message.sender === chatUserId) {
-        socket.emit("markAsDelivered", {
-          userId: currentUser._id,
-          chatUserId: message.sender,
-        })
+    if (chatUserId) refetch();
+  }, [chatUserId]);
+
+  useEffect(() => {
+    if (data?.messages) {
+      setMessages(data.messages);
+      // Merge chat recipient + fetched user data
+      setRecipient((prev) => ({
+        ...(data.recipient || prev),
+        ...(userData?.user || {}),
+      }));
+    }
+  }, [data, userData]);
+
+  // -----------------------
+  // Dark Mode
+  // -----------------------
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add("dark");
+      localStorage.setItem("darkMode", "true");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("darkMode", "false");
+    }
+  }, [darkMode]);
+
+  // -----------------------
+  // SOCKET EVENTS
+  // -----------------------
+  useEffect(() => {
+    if (!socket || !currentUser?._id || !chatUserId) return;
+
+    const onReceiveMessage = (msg) => {
+      const belongs =
+        (msg.sender === chatUserId && msg.recipient === currentUser._id) ||
+        (msg.sender === currentUser._id && msg.recipient === chatUserId);
+
+      if (!belongs) return;
+      setMessages((prev) => [...prev, msg]);
+
+      if (msg.recipient === currentUser._id) {
+        socket.emit("markAsDelivered", { userId: currentUser._id, chatUserId });
+        socket.emit("markAsSeen", { userId: currentUser._id, chatUserId });
       }
-    })
+    };
 
-    socket.on("typing", ({ from }) => {
-      if (from === chatUserId) setIsTyping(true)
-    })
-    socket.on("stopTyping", ({ from }) => {
-      if (from === chatUserId) setIsTyping(false)
-    })
-
-    // Update these handlers:
-    socket.on("messagesDelivered", ({ updatedMessages }) => {
+    const onTyping = ({ from }) => {
+      if (from === chatUserId) setIsTyping(true);
+    };
+    const onStopTyping = ({ from }) => {
+      if (from === chatUserId) setIsTyping(false);
+    };
+    const onMessageDeleted = ({ messageId }) => {
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    };
+    const onMessageEdited = ({ message }) => {
       setMessages((prev) =>
-        prev.map((msg) => {
-          const updated = updatedMessages.find((um) => um._id === msg._id)
-          return updated ? { ...msg, delivered: updated.delivered } : msg
-        }),
-      )
-    })
-
-    socket.on("messagesSeen", ({ updatedMessages }) => {
+        prev.map((m) => (m._id === message._id ? message : m))
+      );
+    };
+    const onChatCleared = ({ chatUserId: cleared }) => {
+      if (cleared === chatUserId) setMessages([]);
+    };
+    const onDelivered = ({ updatedMessages }) => {
       setMessages((prev) =>
-        prev.map((msg) => {
-          const updated = updatedMessages.find((um) => um._id === msg._id)
-          return updated ? { ...msg, seen: updated.seen } : msg
-        }),
-      )
-    })
+        prev.map((m) => {
+          const f = updatedMessages.find((u) => u._id === m._id);
+          return f ? { ...m, delivered: true } : m;
+        })
+      );
+    };
+    const onSeen = ({ updatedMessages }) => {
+      setMessages((prev) =>
+        prev.map((m) => {
+          const f = updatedMessages.find((u) => u._id === m._id);
+          return f ? { ...m, seen: true } : m;
+        })
+      );
+    };
+
+    socket.on("receiveMessage", onReceiveMessage);
+    socket.on("typing", onTyping);
+    socket.on("stopTyping", onStopTyping);
+    socket.on("messageDeleted", onMessageDeleted);
+    socket.on("messageEdited", onMessageEdited);
+    socket.on("chatCleared", onChatCleared);
+    socket.on("messagesDelivered", onDelivered);
+    socket.on("messagesSeen", onSeen);
 
     return () => {
-      socket.off("receiveMessage")
-      socket.off("typing")
-      socket.off("stopTyping")
-      socket.off("messagesDelivered")
-      socket.off("messagesSeen")
-    }
-  }, [socket, currentUser._id, chatUserId])
+      socket.off("receiveMessage", onReceiveMessage);
+      socket.off("typing", onTyping);
+      socket.off("stopTyping", onStopTyping);
+      socket.off("messageDeleted", onMessageDeleted);
+      socket.off("messageEdited", onMessageEdited);
+      socket.off("chatCleared", onChatCleared);
+      socket.off("messagesDelivered", onDelivered);
+      socket.off("messagesSeen", onSeen);
+    };
+  }, [socket, currentUser?._id, chatUserId]);
 
-  useEffect(() => {
-    const fetchChat = async () => {
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/history/${chatUserId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        )
-        setMessages(res.data.messages)
-        setRecipient(res.data.recipient)
-        if (socket) {
-          socket.emit("markAsDelivered", {
-            userId: currentUser._id,
-            chatUserId,
-          })
-        }
-      } catch (err) {
-        console.error("Failed to load chat", err)
-      }
-    }
-    if (socket) {
-      fetchChat()
-    }
-  }, [chatUserId, token, socket])
-
-  useEffect(() => {
-    const handleClickOutside = () => setSelectedMessageId(null)
-    document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
-  }, [])
-
-  useEffect(() => {
-    if (socket && currentUser?._id) {
-      socket.emit("join-connection-rooms", currentUser._id)
-    }
-
-    if (socket && chatUserId && currentUser?._id) {
-      const seenTimeout = setTimeout(() => {
-        socket.emit("markAsSeen", {
-          userId: currentUser._id,
-          chatUserId,
-        })
-      }, 150)
-      return () => clearTimeout(seenTimeout)
-    }
-  }, [socket, chatUserId, currentUser?._id, messages.length])
-
+  // -----------------------
+  // SEND MESSAGE
+  // -----------------------
   const sendMessage = (text) => {
-    if (!text.trim() || !socket) return
-    const messageObj = {
+    socket.emit("sendMessage", {
       sender: currentUser._id,
       recipient: chatUserId,
       text,
-    }
-    socket.emit("sendMessage", messageObj)
-    setInput("")
-  }
+    });
+  };
 
+  // -----------------------
+  // Delete message
+  // -----------------------
+  const handleDelete = (id) => {
+    socket.emit("deleteMessage", { messageId: id });
+  };
+
+  // -----------------------
+  // Edit message
+  // -----------------------
+  const handleEdit = (id, newText) => {
+    socket.emit("editMessage", {
+      messageId: id,
+      userId: currentUser._id,
+      newText,
+    });
+  };
+
+  // -----------------------
+  // Typing Indicator
+  // -----------------------
   const handleInputChange = (e) => {
-    const newValue = e.target.value
-    setInput(newValue)
-    
-    if (!socket) return
+    const val = e.target.value;
+    setInput(val);
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    socket.emit("typing", { from: currentUser._id, to: chatUserId });
+    typingTimeout.current = setTimeout(() => {
+      socket.emit("stopTyping", { from: currentUser._id, to: chatUserId });
+    }, 800);
+  };
 
-    if (typingTimeout.current) {
-      clearTimeout(typingTimeout.current)
-    }
-
-    if (newValue.trim()) {
-      socket.emit("typing", { to: chatUserId, from: currentUser._id })
-      typingTimeout.current = setTimeout(() => {
-        socket.emit("stopTyping", { to: chatUserId, from: currentUser._id })
-      }, 1000) 
-    } else {
-      socket.emit("stopTyping", { to: chatUserId, from: currentUser._id })
-    }
-  }
-
-  const handleReact = (messageId, emoji) => {
-    socket.emit("reactMessage", { messageId, userId: currentUser._id, emoji })
-  }
-
-  const handleDelete = (messageId) => {
-    if (window.confirm("Delete this message?")) {
-      socket.emit("deleteMessage", { messageId })
-    }
-  }
-
-  const handleEdit = (messageId, newText) => {
-    socket.emit("editMessage", { messageId, userId: currentUser._id, newText })
-    setEditing(null)
-    setEditText("")
-  }
-
-  useEffect(() => {
-    if (!socket) return
-    socket.on("messageReacted", ({ messageId, userId, emoji }) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === messageId
-            ? {
-                ...msg,
-                reactions: [...(msg.reactions || []), { userId, emoji }],
-              }
-            : msg,
-        ),
-      )
-    })
-    socket.on("messageDeleted", ({ messageId }) => {
-      setMessages((prev) => prev.filter((msg) => msg._id !== messageId))
-    })
-    socket.on("messageEdited", ({ message }) => {
-      setMessages((prev) => prev.map((msg) => (msg._id === message._id ? { ...msg, ...message } : msg)))
-    })
-    return () => {
-      socket.off("messageReacted")
-      socket.off("messageDeleted")
-      socket.off("messageEdited")
-    }
-  }, [socket])
-
-  const openCalendly = () => {
-    window.open(calendlyLink, "_blank")
-  }
-
+  // -----------------------
+  // Clear Chat
+  // -----------------------
+  const [clearChat] = useClearChatMutation();
   const handleClearChat = async () => {
-    if (!socket || !currentUser?._id || !chatUserId) return
-    if (window.confirm("Are you sure you want to clear this chat?")) {
-      await axios.delete(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/chat/clear/${chatUserId}`, 
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      socket.emit("clearChat", {
-        userId: currentUser._id,
-        chatUserId,
-      })
-    }
-  }
-
-  useEffect(() => {
-    if (!socket) return
-    socket.on("chatCleared", ({ chatUserId: clearedId, userId: clearedUserId }) => {
-      if (
-        (chatUserId === clearedId && currentUser._id === clearedUserId) ||
-        (chatUserId === clearedUserId && currentUser._id === clearedId)
-      ) {
-        setMessages([])
-      }
-    })
-    return () => {
-      socket.off("chatCleared")
-    }
-  }, [socket, chatUserId, currentUser?._id])
-
-    useEffect(() => {
-    if (!socket || !currentUser?._id) return
-    socket.emit("join-connection-rooms", currentUser._id)
-  }, [socket, currentUser?._id, chatUserId])
-
-  if (!chatUserId) return <div>No user selected for chat.</div>
+    if (!window.confirm("Clear all messages?")) return;
+    await clearChat(chatUserId).unwrap();
+    socket.emit("clearChat", { userId: currentUser._id, chatUserId });
+  };
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-900 min-h-screen">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\60\ height=\60\ viewBox=\0 0 60 60\ xmlns=\http://www.w3.org/2000/svg\%3E%3Cg fill=\none\ fillRule=\evenodd\%3E%3Cg fill=\%239C92AC\ fillOpacity=\0.05\%3E%3Ccircle cx=\30\ cy=\30\ r=\2\/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20 dark:opacity-10"></div>
+    <div
+      className="h-screen w-full flex flex-col 
+                 bg-gray-100 text-gray-900 
+                 dark:bg-[#0B141A] dark:text-white"
+    >
+      {/* HEADER */}
+      <div
+        className="h-16 px-4 flex items-center justify-between
+                   bg-white border-b border-gray-200
+                   dark:bg-[#202C33] dark:border-[#2F3B43]"
+      >
+        {/* LEFT SIDE */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate("/matches")}
+            className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-800 dark:text-white" />
+          </button>
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Chat Header */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 mb-6 shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/matches")}
-                className="p-2 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-gray-900 dark:text-white text-lg font-bold shadow-lg">
-                    {recipient?.username?.charAt(0) || "U"}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
-                </div>
-
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{recipient?.username || "User"}</h2>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">{isTyping ? "typing..." : "online"}</p>
-                </div>
+          <div className="flex items-center gap-3">
+            {/* ✅ Show avatar if available */}
+            {recipient?.avatar ? (
+              <img
+                src={recipient.avatar}
+                alt={recipient.username}
+                className="w-9 h-9 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium text-sm">
+                {recipient?.username?.charAt(0)?.toUpperCase() || "U"}
               </div>
-            </div>
+            )}
 
-            <div className="flex items-center gap-2">
-              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white">
-                <Phone className="w-5 h-5" />
-              </button>
-              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white">
-                <Video className="w-5 h-5" />
-              </button>
-              <button className="p-3 hover:bg-white/10 rounded-2xl transition-colors text-gray-600 dark:text-gray-400 hover:text-white">
-                <MoreVertical className="w-5 h-5" />
-              </button>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {recipient?.username || "User"}
+              </h2>
+              <p className="text-blue-500 dark:text-blue-400 text-xs">
+                {isTyping ? "typing..." : "online"}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Chat Container */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-          {/* Messages Area */}
-          <div className="p-6">
-            <MessageList
-              messages={messages}
-              currentUser={currentUser}
-              selectedMessageId={selectedMessageId}
-              setSelectedMessageId={setSelectedMessageId}
-              handleReact={handleReact}
-              handleDelete={handleDelete}
-              handleEdit={handleEdit}
-              editing={editing}
-              setEditing={setEditing}
-              editText={editText}
-              setEditText={setEditText}
-              isTyping={isTyping}
-              recipient={recipient}
-            />
-          </div>
+        {/* RIGHT SIDE */}
+        <div className="flex items-center gap-4">
+          <button
+            className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
+            title="Audio Call"
+          >
+            <Phone className="w-5 h-5 text-gray-800 dark:text-white" />
+          </button>
 
-          {/* Chat Actions */}
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-white/10">
-            <ChatActions
-              setActiveModal={setActiveModal}
-              openCalendly={openCalendly}
-              showEmoji={showEmoji}
-              setShowEmoji={setShowEmoji}
-              handleClearChat={handleClearChat}
-              input={input}
-              setInput={setInput}
-            />
-          </div>
+          <button
+            className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
+            title="Video Call"
+          >
+            <Video className="w-5 h-5 text-gray-800 dark:text-white" />
+          </button>
 
-          {/* Message Input */}
-          <div className="p-6 pt-0">
-            <MessageInput
-              input={input}
-              setInput={setInput}
-              handleSendMessage={sendMessage}
-              isTyping={isTyping}
-              setIsTyping={setIsTyping}
-              showEmoji={showEmoji}
-              setShowEmoji={setShowEmoji}
-              editing={editing}
-              setEditing={setEditing}
-              editText={editText}
-              setEditText={setEditText}
-              selectedMessageId={selectedMessageId}
-              setSelectedMessageId={setSelectedMessageId}
-              onInputChange={handleInputChange}
-              socket={socket}
-              chatUserId={chatUserId}
-            />
-
-            {showEmoji && (
-              <div className="mt-4">
-                <EmojiPicker
-                  showEmoji={showEmoji}
-                  input={input}
-                  setInput={setInput}
-                  onSelectEmoji={(emoji) => {
-                    setInput(input + emoji)
-                    setShowEmoji(false)
-                  }}
-                />
-              </div>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
+            title="Toggle Theme"
+          >
+            {darkMode ? (
+              <Sun className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-800" />
             )}
-          </div>
+          </button>
         </div>
       </div>
 
-      {/* Modals */}
+      {/* MAIN CHAT AREA */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div
+          className="flex-1 overflow-y-auto px-6 py-4 
+                      bg-gray-50 dark:bg-[#0B141A]"
+        >
+          <MessageList
+            messages={messages}
+            currentUser={currentUser}
+            selectedMessageId={selectedMessageId}
+            setSelectedMessageId={setSelectedMessageId}
+            handleDelete={handleDelete}
+            handleEdit={handleEdit}
+            editing={editing}
+            setEditing={setEditing}
+            editText={editText}
+            setEditText={setEditText}
+            isTyping={isTyping}
+            recipient={recipient}
+          />
+        </div>
+
+        {/* CHAT ACTIONS */}
+        <div
+          className="px-4 pb-2
+                     bg-white border-t border-gray-300 
+                     dark:bg-[#111B21] dark:border-[#222E35]"
+        >
+          <ChatActions
+            setActiveModal={setActiveModal}
+            setShowEmoji={setShowEmoji}
+            handleClearChat={handleClearChat}
+          />
+        </div>
+
+        {/* INPUT BOX */}
+        <div
+          className="px-4
+                     bg-white border-t border-gray-300
+                     dark:bg-[#202C33] dark:border-[#2F3B43]"
+        >
+          <MessageInput
+            input={input}
+            setInput={setInput}
+            handleSendMessage={sendMessage}
+            onInputChange={handleInputChange}
+            currentUser={currentUser}
+            chatUserId={chatUserId}
+            socket={socket}
+            setSelectedMessageId={setSelectedMessageId}
+            showEmoji={showEmoji}
+            setShowEmoji={setShowEmoji}
+          />
+        </div>
+      </div>
+
+      {/* EMOJI PICKER */}
+      {showEmoji && (
+        <EmojiPicker
+          input={input}
+          setInput={setInput}
+          onSelectEmoji={(e) => {
+            setInput(input + e);
+            setShowEmoji(false);
+          }}
+        />
+      )}
+
+      {/* MODALS */}
       <ResourceModal
         activeModal={activeModal}
         setActiveModal={setActiveModal}
@@ -368,11 +370,11 @@ const Chat = () => {
         setActiveModal={setActiveModal}
         recipient={recipient}
         currentUser={currentUser}
-        recipientSkills={recipient?.skills || []}
-        userSkills={currentUser?.skills || []}
+        userSkills={currentUser?.skills}
+        recipientSkills={recipient?.skills}
       />
     </div>
-  )
-}
+  );
+};
 
-export default Chat
+export default Chat;

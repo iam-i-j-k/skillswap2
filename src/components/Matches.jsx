@@ -1,184 +1,173 @@
-import React,{ useEffect, useState } from "react"
-import axios from "axios"
-import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
-import { MessageSquare, Users, Sparkles, ArrowRight, Phone, Video, MoreHorizontal } from "lucide-react"
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Users, Loader2, MessageSquare, Phone, Video } from "lucide-react";
+import { useGetMatchesQuery } from "../services/connectionsApi";
 
 const Matches = () => {
-  const [matches, setMatches] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { data, isLoading, isError, error } = useGetMatchesQuery();
+  const matches = data?.matches || [];
 
-  const token = useSelector((state) => state.auth.token)
-
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/connections/matches`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        setMatches(res.data.matches || [])
-      } catch (err) {
-        setError(err.response?.data?.error || err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchMatches()
-  }, [token])
-
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-gray-900 dark:text-white text-lg font-medium">Loading your matches...</p>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Finding your connections</p>
+          <Loader2 className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-900 dark:text-white font-medium">
+            Loading your matches...
+          </p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+            Finding your connections
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-3xl p-8 text-center max-w-md">
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-500/20 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-            <Users className="w-8 h-8 text-red-600 dark:text-red-400" />
-          </div>
-          <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Error Loading Matches</h2>
-          <p className="text-red-500 dark:text-red-300">{error}</p>
+        <div className="bg-white dark:bg-slate-800 border border-red-200 dark:border-red-500/20 rounded-lg p-8 text-center max-w-md">
+          <Users className="w-8 h-8 text-red-600 dark:text-red-400 mx-auto mb-4" />
+          <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">
+            Error Loading Matches
+          </h2>
+          <p className="text-red-500 dark:text-red-300 text-sm">
+            {error?.data?.error || error?.error || "Something went wrong"}
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-6 shadow-xl">
-            <Users className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Your Connections</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+        <div className="mb-12 text-center sm:text-left">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Your Connections
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
             Connect, collaborate, and learn from amazing people in your network
           </p>
         </div>
 
+        {/* Empty State */}
         {matches.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-12 max-w-md mx-auto shadow-xl">
-              <div className="w-20 h-20 bg-gray-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <Users className="w-10 h-10 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">No Connections Yet</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Start connecting with people to build your network and begin meaningful collaborations.
-              </p>
-              <button
-                onClick={() => navigate("/home")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg font-medium"
-              >
-                Find People
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-10 sm:p-12 text-center max-w-sm mx-auto">
+            <Users className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              No Connections Yet
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
+              Start connecting with people to build your network.
+            </p>
+            <button
+              onClick={() => navigate("/home")}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all font-medium"
+            >
+              Find People
+            </button>
           </div>
         ) : (
           <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-center shadow-xl">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{matches.length}</div>
-                <div className="text-gray-600 dark:text-gray-400 font-medium">Total Connections</div>
+            {/* Stats Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
+                  Total Connections
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {matches.length}
+                </p>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-center shadow-xl">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  {matches.reduce((acc, match) => acc + (match.user?.skills?.length || 0), 0)}
-                </div>
-                <div className="text-gray-600 dark:text-gray-400 font-medium">Combined Skills</div>
+
+              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
+                  Combined Skills
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {matches.reduce((acc, m) => acc + (m.user?.skills?.length || 0), 0)}
+                </p>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-center shadow-xl">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  {new Set(matches.flatMap((match) => match.user?.skills || [])).size}
-                </div>
-                <div className="text-gray-600 dark:text-gray-400 font-medium">Unique Skills</div>
+
+              <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
+                  Unique Skills
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {new Set(matches.flatMap((m) => m.user?.skills || [])).size}
+                </p>
               </div>
             </div>
 
-            {/* Matches Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Match Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {matches.map(({ connectionId, user }) => (
                 <div
                   key={connectionId}
-                  className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-3xl p-6 hover:shadow-lg transition-all duration-300 group"
+                  className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
                 >
-                  {/* User Avatar & Info */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative">
-                      <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                        {user?.username?.charAt(0).toUpperCase()}
+                  {/* Header (Avatar + Info) */}
+                  <div className="flex items-start gap-3 mb-4">
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.username}
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 dark:border-slate-700"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg flex-shrink-0 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                        {user.username?.charAt(0).toUpperCase()}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-800"></div>
-                    </div>
+                    )}
+
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg truncate">{user?.username}</h3>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm truncate">{user.email}</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                        {user.username}
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs truncate">
+                        {user.email}
+                      </p>
                     </div>
-                    <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all duration-200">
-                      <MoreHorizontal className="w-4 h-4 text-gray-400" />
-                    </button>
                   </div>
 
                   {/* Bio */}
                   {user.bio && (
-                    <div className="mb-4">
-                      <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-2 leading-relaxed">
-                        {user.bio}
-                      </p>
-                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                      {user.bio}
+                    </p>
                   )}
 
                   {/* Skills */}
                   {user.skills && user.skills.length > 0 && (
-                    <div className="mb-6">
-                      <div className="flex flex-wrap gap-2">
-                        {user.skills.slice(0, 3).map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium border border-purple-200 dark:border-purple-500/30"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                        {user.skills.length > 3 && (
-                          <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium">
-                            +{user.skills.length - 3} more
-                          </span>
-                        )}
-                      </div>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {user.skills.slice(0, 3).map((skill, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium"
+                        >
+                          {skill}
+                        </span>
+                      ))}
                     </div>
                   )}
 
-                  {/* Action Buttons */}
+                  {/* Actions */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => navigate(`/chat/${user._id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl transition-all duration-200 shadow-lg group-hover:shadow-xl font-medium"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm rounded-lg transition-all"
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      Chat
+                      <MessageSquare className="w-4 h-4" /> Chat
                     </button>
-                    <button className="p-3 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-gray-400 rounded-2xl transition-all duration-200">
+
+                    <button className="p-2.5 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
                       <Phone className="w-4 h-4" />
                     </button>
-                    <button className="p-3 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-gray-400 rounded-2xl transition-all duration-200">
+
+                    <button className="p-2.5 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
                       <Video className="w-4 h-4" />
                     </button>
                   </div>
@@ -189,7 +178,7 @@ const Matches = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Matches
+export default Matches;

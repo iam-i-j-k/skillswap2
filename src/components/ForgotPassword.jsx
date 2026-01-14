@@ -1,24 +1,21 @@
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
 import toast from "react-hot-toast";
-import axios from "axios";
+import { useForgotPasswordMutation } from "../services/authApi";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/forgot-password`, { email });
+      await forgotPassword({ email }).unwrap();
       setSent(true);
-      toast.success("If this email is registered, a reset link has been sent.");
+      alert("Password reset link sent!");
     } catch (err) {
-      toast.error("Failed to send reset link. Please try again.");
-    } finally {
-      setLoading(false);
+      console.log(err);
     }
   };
 
@@ -43,14 +40,14 @@ const ForgotPassword = () => {
               className="w-full px-4 py-3 rounded-xl bg-white/20 border border-purple-400/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
+              disabled={isLoading}
             />
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={isLoading || !email}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
+              {isLoading ? "Sending..." : "Send Reset Link"}
             </button>
           </form>
         )}
