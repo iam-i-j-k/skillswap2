@@ -23,7 +23,7 @@ import { useWebRTC } from "../webrtc/useWebRTC";
 const Chat = () => {
   const { id: chatUserId } = useParams();
   const currentUser = useSelector((state) => state.auth.user);
-  const socket = useSocket();
+  const { socket, isConnected } = useSocket(); // Destructure both values
   const navigate = useNavigate();
 
   const [callOpen, setCallOpen] = useState(false);
@@ -43,6 +43,7 @@ const Chat = () => {
     localStorage.getItem("darkMode") === "true"
   );
 
+  // Only use WebRTC when socket is properly connected
   const {
     stream,
     remoteStream,
@@ -55,9 +56,11 @@ const Chat = () => {
     callStatus,
     localVideoRef,
     remoteVideoRef,
-  } = useWebRTC(socket, currentUser._id, chatUserId);
-
-
+  } = useWebRTC(
+    socket, // Pass the actual socket object, not the context object
+    currentUser?._id, 
+    chatUserId
+  );
 
   const typingTimeout = useRef();
 
@@ -76,7 +79,6 @@ const Chat = () => {
     skip: !chatUserId,
   });
 
-  
   // Optional extra safety net
   useEffect(() => {
     if (chatUserId) refetch();
@@ -111,7 +113,15 @@ const Chat = () => {
   // SOCKET EVENTS
   // -----------------------
   useEffect(() => {
-    if (!socket || !currentUser?._id || !chatUserId) return;
+    // Only set up socket listeners if socket is connected
+    if (!socket || !isConnected || !currentUser?._id || !chatUserId) {
+      console.log("Socket not connected or available, skipping socket listeners");
+      console.log("Socket:", socket ? "available" : "null");
+      console.log("isConnected:", isConnected);
+      return;
+    }
+
+    console.log("Setting up socket listeners for chat");
 
     const onReceiveMessage = (msg) => {
       const belongs =
@@ -161,6 +171,7 @@ const Chat = () => {
       );
     };
 
+    // Setup listeners
     socket.on("receiveMessage", onReceiveMessage);
     socket.on("typing", onTyping);
     socket.on("stopTyping", onStopTyping);
@@ -171,21 +182,28 @@ const Chat = () => {
     socket.on("messagesSeen", onSeen);
 
     return () => {
-      socket.off("receiveMessage", onReceiveMessage);
-      socket.off("typing", onTyping);
-      socket.off("stopTyping", onStopTyping);
-      socket.off("messageDeleted", onMessageDeleted);
-      socket.off("messageEdited", onMessageEdited);
-      socket.off("chatCleared", onChatCleared);
-      socket.off("messagesDelivered", onDelivered);
-      socket.off("messagesSeen", onSeen);
+      if (socket) {
+        socket.off("receiveMessage", onReceiveMessage);
+        socket.off("typing", onTyping);
+        socket.off("stopTyping", onStopTyping);
+        socket.off("messageDeleted", onMessageDeleted);
+        socket.off("messageEdited", onMessageEdited);
+        socket.off("chatCleared", onChatCleared);
+        socket.off("messagesDelivered", onDelivered);
+        socket.off("messagesSeen", onSeen);
+      }
     };
-  }, [socket, currentUser?._id, chatUserId]);
+  }, [socket, isConnected, currentUser?._id, chatUserId]);
 
   // -----------------------
   // SEND MESSAGE
   // -----------------------
   const sendMessage = (text) => {
+    if (!socket || !isConnected) {
+      console.error("Cannot send message: socket not connected");
+      return;
+    }
+    
     socket.emit("sendMessage", {
       sender: currentUser._id,
       recipient: chatUserId,
@@ -197,6 +215,11 @@ const Chat = () => {
   // Delete message
   // -----------------------
   const handleDelete = (id) => {
+    if (!socket || !isConnected) {
+      console.error("Cannot delete message: socket not connected");
+      return;
+    }
+    
     socket.emit("deleteMessage", { messageId: id });
   };
 
@@ -204,6 +227,11 @@ const Chat = () => {
   // Edit message
   // -----------------------
   const handleEdit = (id, newText) => {
+    if (!socket || !isConnected) {
+      console.error("Cannot edit message: socket not connected");
+      return;
+    }
+    
     socket.emit("editMessage", {
       messageId: id,
       userId: currentUser._id,
@@ -217,6 +245,12 @@ const Chat = () => {
   const handleInputChange = (e) => {
     const val = e.target.value;
     setInput(val);
+    
+    if (!socket || !isConnected) {
+      console.warn("Socket not connected, skipping typing indicator");
+      return;
+    }
+    
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
     socket.emit("typing", { from: currentUser._id, to: chatUserId });
     typingTimeout.current = setTimeout(() => {
@@ -231,8 +265,34 @@ const Chat = () => {
   const handleClearChat = async () => {
     if (!window.confirm("Clear all messages?")) return;
     await clearChat(chatUserId).unwrap();
-    socket.emit("clearChat", { userId: currentUser._id, chatUserId });
+    
+    if (socket && isConnected) {
+      socket.emit("clearChat", { userId: currentUser._id, chatUserId });
+    }
   };
+
+  // Show loading state while socket is connecting
+  if (!socket || !isConnected) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-100 dark:bg-[#0B141A]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-700 dark:text-gray-300">
+            Connecting to chat server...
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Please wait while we establish the connection
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -249,7 +309,7 @@ const Chat = () => {
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate("1")}
+            onClick={() => navigate("/")}
             className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
           >
             <ArrowLeft className="w-6 h-6 text-gray-800 dark:text-white" />
@@ -290,7 +350,13 @@ const Chat = () => {
           </button>
 
           <button
-            onClick={callUser}
+            onClick={() => {
+              if (socket && isConnected) {
+                callUser();
+              } else {
+                alert("Please wait for connection to be established");
+              }
+            }}
             className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl"
             title="Video Call"
           >
@@ -399,18 +465,23 @@ const Chat = () => {
       {/* Incoming Call Popup */}
       {incomingCall && (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/70 z-50">
-          <h2 className="text-white text-lg mb-4">Incoming video call from {recipient?.username}</h2>
+          <h2 className="text-white text-lg mb-4">
+            Incoming video call from {recipient?.username}
+          </h2>
           <div className="flex gap-4">
             <button
               onClick={answerCall}
               className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+              disabled={!isConnected}
             >
-              Accept
+              {isConnected ? "Accept" : "Connecting..."}
             </button>
             <button
               onClick={() => {
                 setIncomingCall(false);
-                socket.emit("rejectCall", { to: chatUserId });
+                if (socket && isConnected) {
+                  socket.emit("rejectCall", { to: chatUserId, from: currentUser._id });
+                }
               }}
               className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
             >
@@ -434,7 +505,7 @@ const Chat = () => {
                 style={{ display: 'block' }}
               />
               <div className="absolute top-4 left-4 text-white bg-black/50 p-2 rounded">
-                Remote Video
+                {recipient?.username || "Remote"}
               </div>
             </div>
           ) : (
