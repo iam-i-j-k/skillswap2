@@ -243,14 +243,6 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/20 dark:border-white/10 shadow-lg">
       <div className="container mx-auto px-4">
-        {/* Socket Status Debug */}
-        <div className={`fixed top-2 right-2 px-3 py-1 rounded-full text-xs font-medium z-50 ${
-          isConnected 
-            ? "bg-green-100 text-green-800 border border-green-200" 
-            : "bg-yellow-100 text-yellow-800 border border-yellow-200"
-          }`}>
-          {isConnected ? `🟢 Live (${pendingRequests.length})` : "🟡 Connecting..."}
-        </div>
 
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
