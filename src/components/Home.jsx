@@ -15,6 +15,7 @@ import {
 
 import { useSocket } from "../context/SocketContext";
 
+
 const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
   const needsMarquee = (text, limit) => text && text.length > limit;
 
@@ -132,11 +133,38 @@ const UserCard = ({ user, onConnect, onRemove, isConnected, isPending }) => {
   );
 };
 
+
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const socket = useSocket();
+  const { socket, isConnected: socketConnected } = useSocket(); // Rename here
   const currentUserId = useSelector((s) => s.auth.user?._id);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+
+  // Check socket connection
+  useEffect(() => {
+    if (socket) {
+      setIsSocketConnected(socket.connected);
+      
+      const handleConnect = () => {
+        console.log("✅ Socket connected");
+        setIsSocketConnected(true);
+      };
+      
+      const handleDisconnect = () => {
+        console.log("❌ Socket disconnected");
+        setIsSocketConnected(false);
+      };
+      
+      socket.on('connect', handleConnect);
+      socket.on('disconnect', handleDisconnect);
+      
+      return () => {
+        socket.off('connect', handleConnect);
+        socket.off('disconnect', handleDisconnect);
+      };
+    }
+  }, [socket]);
 
   // API Calls
   const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery();
@@ -171,34 +199,84 @@ const Home = () => {
   const filteredUsers = useMemo(() => {
     return users.filter(
       (u) =>
+        u._id !== currentUserId && ( // Exclude current user
         u.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.skills?.some((s) =>
           s.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        ))
     );
-  }, [users, searchQuery]);
+  }, [users, searchQuery, currentUserId]);
 
+  // Rename this function to avoid conflict
+  const isUserConnected = (id) => connectedUsers.some((u) => u.user?._id === id);
   const isPending = (id) => outgoingRequests.includes(id);
-  const isConnected = (id) => connectedUsers.some((u) => u.user?._id === id);
 
   const onConnect = async (user) => {
     try {
-      await sendConnect(user._id).unwrap();
+      // Use the renamed socketConnected variable
+      if (!socket || !socketConnected || !currentUserId) {
+        toast.error("Please wait for connection...");
+        return;
+      }
+      
+      // First, make the API call to create the connection
+      console.log("📨 Sending connection request to:", user.username);
+      const result = await sendConnect(user._id).unwrap();
+      
       toast.success("Request Sent!");
+
+      // Then emit socket event for real-time updates
+      console.log("📤 Emitting send-connection-request socket event");
+      socket.emit("send-connection-request", {
+        requesterId: currentUserId,
+        recipientId: user._id,
+      }, (ack) => {
+        if (ack?.error) {
+          console.error("Socket emission failed:", ack.error);
+          toast.error("Real-time update failed, but request was sent");
+        } else {
+          console.log("✅ Socket event delivered successfully");
+        }
+      });
+
     } catch (err) {
-      toast.error(err?.data?.error || "Something went wrong");
+      console.error("Connection request failed:", err);
+      toast.error(err?.data?.error || "Failed to send connection request");
     }
   };
 
   const onRemove = async (user) => {
     const match = connectedUsers.find((c) => c.user?._id === user._id);
-    if (!match) return;
+    if (!match) {
+      toast.error("Connection not found");
+      return;
+    }
+
     try {
+      // First, make the API call to remove the connection
+      console.log("🗑️ Removing connection with:", user.username);
       await removeConnect(match.connectionId).unwrap();
       toast.success("Connection Removed!");
+
+      // Then emit socket event for real-time updates
+      console.log("📤 Emitting remove-connection socket event");
+      socket.emit("remove-connection", {
+        connectionId: match.connectionId,
+        userId1: currentUserId,
+        userId2: user._id,
+      }, (ack) => {
+        if (ack?.error) {
+          console.error("Socket emission failed:", ack.error);
+          toast.error("Real-time update failed, but connection was removed");
+        } else {
+          console.log("✅ Socket event delivered successfully");
+        }
+      });
+
     } catch (err) {
-      toast.error(err?.data?.error || "Something went wrong");
+      console.error("Remove connection failed:", err);
+      toast.error(err?.data?.error || "Failed to remove connection");
     }
   };
 
@@ -250,6 +328,13 @@ const Home = () => {
       </style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Socket Status Indicator (optional, for debugging) */}
+        <div className={`fixed top-4 right-4 px-3 py-1 rounded-full text-xs font-medium z-50 ${
+          isSocketConnected ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
+        }`}>
+          {isSocketConnected ? '🟢 Live' : '🔴 Offline'}
+        </div>
+
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -270,7 +355,8 @@ const Home = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-slate-900 
                 border border-gray-200 dark:border-slate-700 rounded-lg 
                 text-gray-900 dark:text-white placeholder-gray-500 
-                focus:outline-none focus:ring-2 focus:ring-blue-500"
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                transition-colors duration-200"
             />
           </div>
         </div>
@@ -281,7 +367,7 @@ const Home = () => {
             <div
               key={i}
               className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 
-                rounded-lg p-6 flex items-center justify-between"
+                rounded-lg p-6 flex items-center justify-between hover:shadow-md transition-shadow"
             >
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
@@ -291,7 +377,9 @@ const Home = () => {
                   {stat.value}
                 </p>
               </div>
-              <stat.icon className="w-6 h-6 text-gray-400" />
+              <stat.icon className={`w-6 h-6 ${
+                i === 0 ? 'text-blue-400' : i === 1 ? 'text-green-400' : 'text-purple-400'
+              }`} />
             </div>
           ))}
         </div>
@@ -300,6 +388,16 @@ const Home = () => {
         {usersLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No users found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              {searchQuery ? 'Try adjusting your search terms' : 'No users available to connect with'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -313,7 +411,7 @@ const Home = () => {
                   user={u}
                   onConnect={onConnect}
                   onRemove={onRemove}
-                  isConnected={isConnected(u._id)}
+                  isConnected={isUserConnected(u._id)} // Use renamed function
                   isPending={isPending(u._id)}
                 />
               </div>

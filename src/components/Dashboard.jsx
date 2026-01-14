@@ -140,11 +140,21 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 -mt-10 sm:-mt-8">
             {/* Avatar */}
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-lg border-4 border-white dark:border-slate-900 flex-shrink-0 mx-auto sm:mx-0">
-              <img
-                src={profile?.user?.avatar || "/placeholder.svg"}
-                alt="User"
-                className="w-full h-full object-cover"
-              />
+              {profile?.user?.avatar ? (
+                <img
+                  src={profile.user.avatar}
+                  alt="User"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/placeholder.svg";
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-semibold">
+                  {profile?.user?.username?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
             </div>
 
             {/* Info */}

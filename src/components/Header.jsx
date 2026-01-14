@@ -27,8 +27,9 @@ const Header = () => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [socketStatus, setSocketStatus] = useState("disconnected");
+  const [pendingRequestsList, setPendingRequestsList] = useState([]);
 
   const [darkMode, setDarkMode] = useState(() => {
     const stored = localStorage.getItem("darkMode");
@@ -39,17 +40,29 @@ const Header = () => {
   const mobileMenuRef = useRef(null);
   const profileMenuRef = useRef(null);
 
-  const socket = useSocket();
+  const { socket, isConnected } = useSocket(); // Destructure from context
   const authUser = useSelector((state) => state.auth.user);
   const currentUserId = authUser?._id;
   const username = authUser?.username;
 
   const {
-    data: requests = [],
+    data: connectionsData,
     refetch: refetchRequests,
-  } = useListConnectionsQuery();
+    isLoading: requestsLoading,
+  } = useListConnectionsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
-  const safeRequests = Array.isArray(requests) ? requests : [];
+  const pendingRequests =
+    // derive from local state if available so UI updates instantly via sockets
+    (pendingRequestsList.length > 0
+      ? pendingRequestsList
+      : connectionsData?.connections?.filter((c) => {
+          const recipientId = c?.recipient?._id || c?.recipient;
+          return c.status === "pending" && recipientId === currentUserId;
+        }) || []) ;
+
+  console.log("🔔 Current pending requests:", pendingRequests.length);
 
   useEffect(() => {
     darkMode
@@ -76,25 +89,143 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Socket events
+  // SINGLE CONSOLIDATED SOCKET EFFECT
   useEffect(() => {
-    if (!socket || !currentUserId) return;
+    if (!socket || !isConnected || !currentUserId) {
+      console.log("❌ Cannot setup socket events - socket:", socket ? "available" : "null", "connected:", isConnected, "userId:", currentUserId);
+      return;
+    }
 
-    socket.on("newConnectionRequest", refetchRequests);
-    socket.on("connectionAccepted", refetchRequests);
-    socket.on("connectionDeclined", refetchRequests);
+    console.log("✅ Socket is available, setting up ALL listeners");
 
-    return () => {
-      socket.off("newConnectionRequest");
-      socket.off("connectionAccepted");
-      socket.off("connectionDeclined");
+    // Remove any existing listeners for these events first (defensive)
+    try {
+      socket.off && socket.off("connect");
+      socket.off && socket.off("disconnect");
+      socket.off && socket.off("connect_error");
+      socket.off && socket.off("newConnectionRequest");
+      socket.off && socket.off("connectionAccepted");
+      socket.off && socket.off("connectionDeclined");
+    } catch (err) {
+      console.warn('Could not remove previous socket listeners (ok):', err);
+    }
+
+    // Connection status handlers
+    const handleConnect = () => {
+      console.log("🔌 Socket connected");
+      setSocketStatus("connected");
+      
+      // Note: joining the room is handled centrally in SocketContext to avoid duplicates
     };
-  }, [socket, currentUserId, refetchRequests]);
 
-  // Join socket rooms
+    const handleDisconnect = () => {
+      console.log("🔌 Socket disconnected");
+      setSocketStatus("disconnected");
+    };
+
+    const handleConnectError = (error) => {
+      console.error("🔌 Socket connection error:", error);
+      setSocketStatus("error");
+    };
+
+    const handleNewConnectionRequest = (data) => {
+      console.log("🆕 Header: Received newConnectionRequest event", data);
+      // Data now comes as a populated connection object directly
+      try {
+        const incomingRequest = data; // No need for data?.connection || data
+        const recipientId = incomingRequest?.recipient?._id || incomingRequest?.recipient;
+        
+        if (recipientId && recipientId === currentUserId) {
+          setPendingRequestsList((prev) => {
+            // Avoid duplicates using _id
+            const exists = prev.some((p) => p._id === incomingRequest._id);
+            return exists ? prev : [incomingRequest, ...prev];
+          });
+        }
+      } catch (err) {
+        console.error('Error updating local pending list:', err);
+      }
+
+      // Keep server in-sync by refetching as a fallback
+      console.log("🔄 Refetching connection requests...");
+      refetchRequests();
+    };
+
+    const handleConnectionAccepted = (data) => {
+      console.log("✅ Header: Received connectionAccepted event", data);
+      // Remove accepted connection from local pending list
+      try {
+        const connectionId = data?._id; // Data is the connection object itself
+        if (connectionId) {
+          setPendingRequestsList((prev) => prev.filter((p) => p._id !== connectionId));
+        }
+      } catch (err) {
+        console.error('Error removing accepted from local pending list:', err);
+      }
+
+      console.log("🔄 Refetching connection requests...");
+      refetchRequests();
+    };
+
+    const handleConnectionDeclined = (data) => {
+      console.log("❌ Header: Received connectionDeclined event", data);
+      // Remove declined connection from local pending list
+      try {
+        const connectionId = data?._id; // Data is the connection object itself
+        if (connectionId) {
+          setPendingRequestsList((prev) => prev.filter((p) => p._id !== connectionId));
+        }
+      } catch (err) {
+        console.error('Error removing declined from local pending list:', err);
+      }
+
+      console.log("🔄 Refetching connection requests...");
+      refetchRequests();
+    };
+
+    // Set up ALL socket listeners
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
+    socket.on("newConnectionRequest", handleNewConnectionRequest);
+    socket.on("connectionAccepted", handleConnectionAccepted);
+    socket.on("connectionDeclined", handleConnectionDeclined);
+
+    // SocketContext now joins rooms when appropriate; avoid emitting join-room here.
+
+    // Set initial status
+    setSocketStatus(socket.connected ? "connected" : "disconnected");
+
+    // Cleanup function - remove ALL listeners
+    return () => {
+      console.log("🧹 Cleaning up ALL socket listeners");
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
+      socket.off("newConnectionRequest", handleNewConnectionRequest);
+      socket.off("connectionAccepted", handleConnectionAccepted);
+      socket.off("connectionDeclined", handleConnectionDeclined);
+    };
+  }, [socket, currentUserId, refetchRequests, isConnected]); // All dependencies in one place
+
+  // In Header.jsx - update the sync useEffect
   useEffect(() => {
-    if (socket && currentUserId) socket.emit("join-connection-rooms", currentUserId);
-  }, [socket, currentUserId]);
+    try {
+      if (!connectionsData) return;
+
+      const serverList = connectionsData?.connections || [];
+      if (!serverList) return;
+
+      const filtered = serverList.filter((c) => {
+        const recipientId = c?.recipient?._id || c?.recipient;
+        return c.status === 'pending' && recipientId === currentUserId;
+      });
+
+      setPendingRequestsList(filtered);
+    } catch (err) {
+      console.error('Error syncing pendingRequestsList from server data:', err);
+    }
+  }, [connectionsData, currentUserId]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -112,8 +243,16 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/20 dark:border-white/10 shadow-lg">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
+        {/* Socket Status Debug */}
+        <div className={`fixed top-2 right-2 px-3 py-1 rounded-full text-xs font-medium z-50 ${
+          isConnected 
+            ? "bg-green-100 text-green-800 border border-green-200" 
+            : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+          }`}>
+          {isConnected ? `🟢 Live (${pendingRequests.length})` : "🟡 Connecting..."}
+        </div>
 
+        <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <a href="/dashboard" className="flex items-center space-x-3 group">
             <div className="relative">
@@ -147,14 +286,19 @@ const Header = () => {
                 className="relative px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
               >
                 <Bell className="w-5 h-5" />
-                {safeRequests.length > 0 && (
+                {pendingRequests.length > 0 && (
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-xs text-white rounded-full flex items-center justify-center animate-pulse">
-                    {safeRequests.length}
+                    {pendingRequests.length}
                   </span>
                 )}
               </button>
 
-              <ConnectionRequests open={isRequestsOpen} />
+              <ConnectionRequests 
+                open={isRequestsOpen} 
+                requests={pendingRequests}
+                loading={requestsLoading}
+                onUpdate={refetchRequests}
+              />
             </div>
 
             {/* Theme Toggle */}
@@ -177,7 +321,6 @@ const Header = () => {
 
               {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-3 w-40 bg-white dark:bg-slate-800 shadow-lg rounded-xl border border-gray-200 dark:border-slate-700 py-2 z-50">
-
                   <button
                     onClick={() => {
                       handleProfile();
@@ -189,7 +332,6 @@ const Header = () => {
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </button>
-
                   <button
                     onClick={() => {
                       handleLogout();
@@ -201,7 +343,6 @@ const Header = () => {
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
                   </button>
-
                 </div>
               )}
             </div>
@@ -215,7 +356,6 @@ const Header = () => {
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
@@ -244,8 +384,6 @@ const Header = () => {
                 <span>{item.label}</span>
               </button>
             ))}
-
-            {/* Mobile Profile */}
             <button
               onClick={() => {
                 handleProfile();
@@ -256,8 +394,6 @@ const Header = () => {
               <User className="w-5 h-5" />
               <span>Profile</span>
             </button>
-
-            {/* Mobile Logout */}
             <button
               onClick={() => {
                 handleLogout();
