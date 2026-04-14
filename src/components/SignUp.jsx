@@ -197,7 +197,15 @@ const SignUp = () => {
     }
 
     try {
-      const res = await registerUser(formData).unwrap();
+      const { username, email, password, skills, bio } = formData;
+
+      const res = await registerUser({
+        username,
+        email,
+        password,
+        skills,
+        bio
+      }).unwrap();
       setShowVerifyNotice(true);
     } catch (err) {
       console.error(err);
