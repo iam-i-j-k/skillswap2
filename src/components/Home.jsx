@@ -328,13 +328,6 @@ const Home = () => {
       </style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Socket Status Indicator (optional, for debugging) */}
-        <div className={`fixed top-4 right-4 px-3 py-1 rounded-full text-xs font-medium z-50 ${
-          isSocketConnected ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
-        }`}>
-          {isSocketConnected ? '🟢 Live' : '🔴 Offline'}
-        </div>
-
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
