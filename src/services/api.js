@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { logout, setCredentials } from '../features/auth/authSlice';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_API_URL,
+  baseUrl: 'https://backend-y50t.onrender.com/api',
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth?.token;
