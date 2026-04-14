@@ -33,7 +33,7 @@ const Login = () => {
       dispatch(setCredentials(res));
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.data?.message || "Invalid credentials");
+      setError(err?.data?.error || err?.data?.message || "Invalid credentials");
     }
   };
 
