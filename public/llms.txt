@@ -1,0 +1,45 @@
+# SkillSwap - Skill Exchange Platform
+
+SkillSwap is a modern web application that connects people to exchange skills, learn together, and build meaningful community relationships. Our platform enables users to discover matches, chat in real-time, and grow through collaborative learning.
+
+## Overview
+
+SkillSwap helps individuals find skill-sharing partners within a vibrant community. Users can create profiles highlighting their skills and interests, connect with others, and engage in real-time conversations to coordinate their learning exchanges.
+
+## Key Features
+
+- **User Profiles**: Create detailed profiles showcasing your skills and interests
+- **Smart Matching**: Discover compatible skill-exchange partners
+- **Real-time Chat**: Communicate instantly with connections using WebSocket technology
+- **Connection Management**: Send, receive, and manage connection requests
+- **Video Integration**: Support for Jitsi-based video calls (coming soon)
+- **Dark Mode**: Fully responsive dark/light theme support
+
+## Getting Started
+
+Visit [SkillSwap](https://skillswap2.vercel.app/) to:
+- [Sign Up](https://skillswap2.vercel.app/signup) for a new account
+- [Login](https://skillswap2.vercel.app/login) to your existing account
+- Explore [how it works](https://skillswap2.vercel.app/how-it-works)
+- Read [testimonials](https://skillswap2.vercel.app/testimonials) from our community
+
+## Learning Resources
+
+- [Benefits of Skill Exchange](https://skillswap2.vercel.app/benefits)
+- [FAQ](https://skillswap2.vercel.app/faq)
+- [Team](https://skillswap2.vercel.app/team)
+
+## Legal
+
+- [Terms of Service](https://skillswap2.vercel.app/terms)
+- [Privacy Policy](https://skillswap2.vercel.app/privacy)
+
+## Contact & Support
+
+[Get in touch with our team](https://skillswap2.vercel.app/contact-us)
+
+## Technology Stack
+
+SkillSwap is built with modern web technologies including React, Redux Toolkit for state management, Tailwind CSS for styling, and Socket.IO for real-time communication. Our responsive design ensures a great experience across all devices.
+
+For questions or feedback, please [contact us](https://skillswap2.vercel.app/contact-us).
