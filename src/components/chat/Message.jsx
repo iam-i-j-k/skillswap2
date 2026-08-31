@@ -37,18 +37,46 @@ const Message = ({
   const renderFile = () => {
     if (!file?.url) return null;
 
-    const downloadFile = () => {
-      let filename = file.originalName || "file";
-      if (!filename.includes(".")) {
-        const ext = file.mimetype?.split("/")[1] || "";
-        if (ext) filename += "." + ext;
+    const downloadFile = async () => {
+      const filename = file.originalName || "download";
+      const mime = file.mimetype || "application/octet-stream";
+
+      // ── data: URI — already inline, decode directly ────────────────────────
+      if (file.url?.startsWith("data:")) {
+        const link = document.createElement("a");
+        link.href = file.url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
       }
-      const link = document.createElement("a");
-      link.href = file.url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+
+      // ── Remote URL — proxy for correct Content-Disposition ─────────────────
+      const authData = JSON.parse(localStorage.getItem("auth") || "{}");
+      const token = authData?.token || "";
+      const params = new URLSearchParams({ url: file.url, name: filename, mime });
+      const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+      const proxyUrl = `${apiBase}/chat/download?${params.toString()}`;
+
+      try {
+        const resp = await fetch(proxyUrl, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!resp.ok) throw new Error(`${resp.status}`);
+        const blob = await resp.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+      } catch (err) {
+        console.error("Download failed:", err.message);
+        window.open(file.url, "_blank");
+      }
     };
 
     const type = file.mimetype || "";

@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { useGetAllUsersQuery } from "../services/usersApi";
+import { useGetAllUsersQuery, useGetRecommendationsQuery } from "../services/usersApi";
 import {
   useListConnectionsQuery,
   useSendConnectionRequestMutation,
@@ -168,6 +168,7 @@ const Home = () => {
 
   // API Calls
   const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery();
+  const { data: recommendationsData, isLoading: recommendationsLoading } = useGetRecommendationsQuery(currentUserId, { skip: !currentUserId });
   const users = usersData?.users || [];
 
   const { data: connectionsData } = useListConnectionsQuery();
@@ -374,6 +375,33 @@ const Home = () => {
                 i === 0 ? 'text-blue-400' : i === 1 ? 'text-green-400' : 'text-purple-400'
               }`} />
             </div>
+          ))}
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Suggested Skill Partners</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">AI-ranked people who match your learning goals and strengths.</p>
+            </div>
+          </div>
+
+          {recommendationsLoading ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Generating recommendations...</p>
+          ) : (recommendationsData?.recommendations?.length ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {recommendationsData.recommendations.map((item) => (
+                <div key={item.user._id} className="border border-gray-200 dark:border-slate-700 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{item.user.username}</h3>
+                    <span className="text-xs text-purple-600 dark:text-purple-400">{item.score.toFixed(2)}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{item.reason}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Recommendations will appear once your profile includes offered and desired skills.</p>
           ))}
         </div>
 

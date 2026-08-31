@@ -9,7 +9,7 @@ const makeClientId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 
 const ResourceModal = ({ activeModal, setActiveModal, recipient, currentUser }) => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
-  const socket = useSocket();
+  const { socket } = useSocket();
 
   const [uploadResource, { isLoading }] = useUploadResourceMutation();
 
@@ -69,6 +69,7 @@ const ResourceModal = ({ activeModal, setActiveModal, recipient, currentUser }) 
         text: file.name,
         file: {
           url: res.url,
+          public_id: res.public_id,           // needed for signed proxy download
           originalName: res.originalName || file.name,
           mimetype: res.mimetype || file.type,
           size: file.size,

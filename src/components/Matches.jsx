@@ -88,7 +88,7 @@ const Matches = () => {
                   Combined Skills
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {matches.reduce((acc, m) => acc + (m.user?.skills?.length || 0), 0)}
+                  {matches.reduce((acc, m) => acc + (m?.user?.skills?.length || 0), 0)}
                 </p>
               </div>
 
@@ -97,14 +97,14 @@ const Matches = () => {
                   Unique Skills
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {new Set(matches.flatMap((m) => m.user?.skills || [])).size}
+                  {new Set(matches.flatMap((m) => m?.user?.skills || [])).size}
                 </p>
               </div>
             </div>
 
             {/* Match Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {matches.map(({ connectionId, user }) => (
+              {matches.filter(({ user }) => user != null).map(({ connectionId, user }) => (
                 <div
                   key={connectionId}
                   className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
