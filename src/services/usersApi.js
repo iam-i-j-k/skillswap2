@@ -36,6 +36,11 @@ export const usersApi = api.injectEndpoints({
       query: () => "/users/stats",
       providesTags: ["Stats"],
     }),
+
+    getRecommendations: builder.query({
+      query: (userId) => `/recommendations/${userId}`,
+      providesTags: ["Users"],
+    }),
     
     uploadAvatar: builder.mutation({
       query: ({ file, userId }) => {
@@ -74,6 +79,7 @@ export const {
   useGetProfileQuery,
   useUpdateProfileMutation,
   useGetStatsQuery,
+  useGetRecommendationsQuery,
   useUploadAvatarMutation,
   useUploadCoverMutation
 } = usersApi;

@@ -134,12 +134,22 @@ const ProfileModal = ({ isOpen, onClose, profile }) => {
     username: profile?.username || "",
     bio: profile?.bio || "",
     skills: profile?.skills || [],
+    offeredSkills: profile?.offeredSkills || [],
+    desiredSkills: profile?.desiredSkills || [],
+    skillContext: profile?.skillContext || "",
+    learningGoals: profile?.learningGoals || [],
+    skillLevel: profile?.skillLevel || "Intermediate",
     avatar: profile?.avatar || "",
     coverPhoto: profile?.coverPhoto || "",
   });
 
   // tag input state
   const [inputValue, setInputValue] = useState("");
+  const [draftFields, setDraftFields] = useState({
+    offeredSkills: "",
+    desiredSkills: "",
+    learningGoals: "",
+  });
   const [isOpenSuggestions, setIsOpenSuggestions] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
 
@@ -165,6 +175,11 @@ useEffect(() => {
     username: profile.username,
     bio: profile.bio,
     skills: profile.skills,
+    offeredSkills: profile.offeredSkills || [],
+    desiredSkills: profile.desiredSkills || [],
+    skillContext: profile.skillContext || "",
+    learningGoals: profile.learningGoals || [],
+    skillLevel: profile.skillLevel || "Intermediate",
     avatar: profile.avatar,
     coverPhoto: profile.coverPhoto,
   });
@@ -197,6 +212,23 @@ useEffect(() => {
   // remove skill
   const removeSkill = (skill) => {
     setEditedProfile((p) => ({ ...p, skills: p.skills.filter((s) => s !== skill) }));
+  };
+
+  const addArrayValue = (field, value) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    setEditedProfile((p) => ({
+      ...p,
+      [field]: p[field].includes(trimmed) ? p[field] : [...p[field], trimmed],
+    }));
+    setDraftFields((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const removeArrayValue = (field, value) => {
+    setEditedProfile((p) => ({
+      ...p,
+      [field]: p[field].filter((item) => item !== value),
+    }));
   };
 
   // keyboard handlers for tag input
@@ -284,6 +316,11 @@ useEffect(() => {
         username: editedProfile.username,
         bio: editedProfile.bio,
         skills: editedProfile.skills,
+        offeredSkills: editedProfile.offeredSkills,
+        desiredSkills: editedProfile.desiredSkills,
+        skillContext: editedProfile.skillContext,
+        learningGoals: editedProfile.learningGoals,
+        skillLevel: editedProfile.skillLevel,
       };
       const updated = await updateProfile(payload).unwrap();
       if (updated?.user) {
@@ -485,6 +522,95 @@ useEffect(() => {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-500 dark:text-gray-300 block mb-2">Offered Skills</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {editedProfile.offeredSkills.map((skill) => (
+                    <span key={skill} className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm">
+                      {skill}
+                      <button type="button" onClick={() => removeArrayValue('offeredSkills', skill)} className="text-xs">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={draftFields.offeredSkills}
+                    onChange={(e) => setDraftFields((prev) => ({ ...prev, offeredSkills: e.target.value }))}
+                    placeholder="Add a skill you can teach"
+                    className="flex-1 px-3 py-2 rounded-xl border bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
+                  />
+                  <button type="button" onClick={() => addArrayValue('offeredSkills', draftFields.offeredSkills)} className="px-3 py-2 rounded-xl bg-blue-600 text-white">Add</button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-500 dark:text-gray-300 block mb-2">Desired Skills</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {editedProfile.desiredSkills.map((skill) => (
+                    <span key={skill} className="inline-flex items-center gap-2 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded-full text-sm">
+                      {skill}
+                      <button type="button" onClick={() => removeArrayValue('desiredSkills', skill)} className="text-xs">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={draftFields.desiredSkills}
+                    onChange={(e) => setDraftFields((prev) => ({ ...prev, desiredSkills: e.target.value }))}
+                    placeholder="Add a skill you want to learn"
+                    className="flex-1 px-3 py-2 rounded-xl border bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
+                  />
+                  <button type="button" onClick={() => addArrayValue('desiredSkills', draftFields.desiredSkills)} className="px-3 py-2 rounded-xl bg-emerald-600 text-white">Add</button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-500 dark:text-gray-300 block mb-2">Skill Context</label>
+                <textarea
+                  value={editedProfile.skillContext}
+                  onChange={(e) => setEditedProfile((p) => ({ ...p, skillContext: e.target.value }))}
+                  rows={3}
+                  placeholder="Describe your learning focus or collaboration goals"
+                  className="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-500 dark:text-gray-300 block mb-2">Learning Goals</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {editedProfile.learningGoals.map((goal) => (
+                    <span key={goal} className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 px-3 py-1 rounded-full text-sm">
+                      {goal}
+                      <button type="button" onClick={() => removeArrayValue('learningGoals', goal)} className="text-xs">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={draftFields.learningGoals}
+                    onChange={(e) => setDraftFields((prev) => ({ ...prev, learningGoals: e.target.value }))}
+                    placeholder="Add a learning goal"
+                    className="flex-1 px-3 py-2 rounded-xl border bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
+                  />
+                  <button type="button" onClick={() => addArrayValue('learningGoals', draftFields.learningGoals)} className="px-3 py-2 rounded-xl bg-amber-600 text-white">Add</button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-500 dark:text-gray-300 block mb-2">Skill Level</label>
+                <select
+                  value={editedProfile.skillLevel}
+                  onChange={(e) => setEditedProfile((p) => ({ ...p, skillLevel: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-xl border bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
             </div>
 
             {/* Actions */}

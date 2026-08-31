@@ -14,6 +14,11 @@ import Chat from "./components/Chat"
 import LoadingScreen from "./components/LoadingScreen"
 import toast, { Toaster } from "react-hot-toast"
 import Header from "./components/Header"
+import Marketplace from "./components/Marketplace"
+import Swaps from "./components/Swaps"
+import Community from "./components/Community"
+import AdminDashboard from "./components/AdminDashboard"
+import Notifications from "./components/Notifications"
 
 import Benefits from "./quicklinks/Benefits"
 import HowItWorks from "./quicklinks/HowItWorks"
@@ -133,6 +138,51 @@ function AppWithRouter({ token }) {
             element={
               <ProtectedRoute>
                 <Matches />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute>
+                <Marketplace />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/swaps"
+            element={
+              <ProtectedRoute>
+                <Swaps />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute>
+                <Community />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

@@ -1,8 +1,8 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+﻿import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { logout, setCredentials } from '../features/auth/authSlice';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'https://backend-y50t.onrender.com/api',
+  baseUrl: 'http://localhost:5000/api',
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth?.token;
@@ -31,6 +31,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Users', 'Connections', 'Chat'],
+  tagTypes: ['Users', 'Connections', 'Chat', 'Profile', 'Stats', 'Listings', 'SavedListings', 'Swaps', 'Reputation', 'Notifications', 'Feed', 'Disputes', 'Admin'],
   endpoints: () => ({}),
 });
+

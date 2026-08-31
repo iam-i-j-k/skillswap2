@@ -142,6 +142,11 @@ const SignUp = () => {
     password: "",
     confirmPassword: "",
     skills: [],
+    offeredSkills: [],
+    desiredSkills: [],
+    skillContext: "",
+    learningGoals: [],
+    skillLevel: "Intermediate",
     bio: "",
   })
   const [error, setError] = useState("")
@@ -165,20 +170,20 @@ const SignUp = () => {
     }))
   }
 
-  const addCustomSkill = () => {
-    if (customSkill.trim() && !formData.skills.includes(customSkill.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, customSkill.trim()],
-      }))
-      setCustomSkill("")
-    }
-  }
-
-  const removeSkill = (skillToRemove) => {
+  const addCustomSkill = (field) => {
+    const value = customSkill.trim();
+    if (!value) return;
     setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.filter((skill) => skill !== skillToRemove),
+      [field]: prev[field].includes(value) ? prev[field] : [...prev[field], value],
+    }))
+    setCustomSkill("")
+  }
+
+  const removeSkill = (field, skillToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((skill) => skill !== skillToRemove),
     }))
   }
 
@@ -197,13 +202,18 @@ const SignUp = () => {
     }
 
     try {
-      const { username, email, password, skills, bio } = formData;
+      const { username, email, password, skills, offeredSkills, desiredSkills, skillContext, learningGoals, skillLevel, bio } = formData;
 
-      const res = await registerUser({
+      await registerUser({
         username,
         email,
         password,
         skills,
+        offeredSkills,
+        desiredSkills,
+        skillContext,
+        learningGoals,
+        skillLevel,
         bio
       }).unwrap();
       setShowVerifyNotice(true);
@@ -358,7 +368,7 @@ const SignUp = () => {
                       className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-full text-sm border border-purple-200 dark:border-purple-500/30"
                     >
                       {skill}
-                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500 transition-colors">
+                      <button type="button" onClick={() => removeSkill('skills', skill)} className="hover:text-red-500 transition-colors">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -390,7 +400,7 @@ const SignUp = () => {
                       />
                       <button
                         type="button"
-                        onClick={addCustomSkill}
+                        onClick={() => addCustomSkill('skills')}
                         className="px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-sm hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center gap-1"
                       >
                         <Plus className="w-4 h-4" />
@@ -413,6 +423,106 @@ const SignUp = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Offered Skills</label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {formData.offeredSkills.map((skill) => (
+                  <span key={skill} className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full text-sm border border-blue-200 dark:border-blue-500/30">
+                    {skill}
+                    <button type="button" onClick={() => removeSkill('offeredSkills', skill)} className="hover:text-red-500 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customSkill}
+                  onChange={(e) => setCustomSkill(e.target.value)}
+                  placeholder="Add skills you can teach..."
+                  className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
+                />
+                <button type="button" onClick={() => addCustomSkill('offeredSkills')} className="px-3 py-2 bg-blue-600 text-white rounded-xl text-sm">Add</button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Desired Skills</label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {formData.desiredSkills.map((skill) => (
+                  <span key={skill} className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-full text-sm border border-emerald-200 dark:border-emerald-500/30">
+                    {skill}
+                    <button type="button" onClick={() => removeSkill('desiredSkills', skill)} className="hover:text-red-500 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customSkill}
+                  onChange={(e) => setCustomSkill(e.target.value)}
+                  placeholder="Add skills you want to learn..."
+                  className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
+                />
+                <button type="button" onClick={() => addCustomSkill('desiredSkills')} className="px-3 py-2 bg-emerald-600 text-white rounded-xl text-sm">Add</button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="skillContext" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Skill Context</label>
+              <textarea
+                id="skillContext"
+                name="skillContext"
+                value={formData.skillContext}
+                onChange={handleChange}
+                rows={2}
+                className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
+                placeholder="Describe your learning focus or current projects..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="skillLevel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Skill Level</label>
+              <select
+                id="skillLevel"
+                name="skillLevel"
+                value={formData.skillLevel}
+                onChange={handleChange}
+                className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Learning Goals</label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {formData.learningGoals.map((goal) => (
+                  <span key={goal} className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-full text-sm border border-amber-200 dark:border-amber-500/30">
+                    {goal}
+                    <button type="button" onClick={() => removeSkill('learningGoals', goal)} className="hover:text-red-500 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customSkill}
+                  onChange={(e) => setCustomSkill(e.target.value)}
+                  placeholder="Add a learning goal..."
+                  className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
+                />
+                <button type="button" onClick={() => addCustomSkill('learningGoals')} className="px-3 py-2 bg-amber-600 text-white rounded-xl text-sm">Add</button>
+              </div>
             </div>
 
             {/* Bio Input */}

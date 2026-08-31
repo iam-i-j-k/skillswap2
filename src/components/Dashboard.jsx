@@ -4,6 +4,7 @@ import {
   useGetProfileQuery,
   useUpdateProfileMutation,
   useGetStatsQuery,
+  useGetRecommendationsQuery,
 } from "../services/usersApi";
 import {
   Users,
@@ -83,6 +84,7 @@ const Dashboard = () => {
 
   const { data: profile } = useGetProfileQuery(userId, { skip: !userId });
   const { data: stats } = useGetStatsQuery();
+  const { data: recommendationsData, isLoading: recommendationsLoading } = useGetRecommendationsQuery(userId, { skip: !userId });
   const [updateProfile] = useUpdateProfileMutation();
 
   useEffect(() => {
@@ -237,6 +239,40 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 sm:p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">SkillMatch AI Recommendations</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Semantic matches based on offered and desired skills.</p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-semibold">New</span>
+          </div>
+
+          {recommendationsLoading ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading recommendations...</p>
+          ) : (recommendationsData?.recommendations?.length ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {recommendationsData.recommendations.map((item) => (
+                <div key={item.user._id} className="border border-gray-200 dark:border-slate-700 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{item.user.username}</h3>
+                    <span className="text-xs font-medium text-purple-600 dark:text-purple-400">{item.matchType}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{item.reason}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(item.user.offeredSkills || item.user.skills || []).slice(0, 3).map((skill) => (
+                      <span key={skill} className="px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-700 text-xs text-gray-700 dark:text-gray-300">{skill}</span>
+                    ))}
+                  </div>
+                  <div className="mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium">Score: {item.score}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Add offered and desired skills to see your first recommendations.</p>
+          ))}
         </div>
 
         {/* Quick Actions & Activity */}

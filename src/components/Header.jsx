@@ -12,6 +12,12 @@ import {
   Home,
   User,
   LogOut,
+  ShoppingBag,
+  ArrowLeftRight,
+  Trophy,
+  Shield,
+  ArrowRight,
+  CheckCheck,
 } from "lucide-react";
 import { useSocket } from "../context/SocketContext";
 import { useSelector, useDispatch } from "react-redux";
@@ -20,6 +26,7 @@ import ConnectionRequests from "./ConnectionRequests";
 
 // RTK Query
 import { useListConnectionsQuery } from "../services/connectionsApi";
+import { useGetNotificationsQuery, useMarkNotificationReadMutation } from "../services/platformApi";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -53,6 +60,13 @@ const Header = () => {
     refetchOnMountOrArgChange: true,
   });
 
+  const { data: notifData, refetch: refetchNotifs } = useGetNotificationsQuery(undefined, {
+    pollingInterval: 30000,
+  });
+  const [markRead] = useMarkNotificationReadMutation();
+  const platformNotifs = (notifData?.notifications || []).filter((n) => !n.read);
+  const unreadNotifCount = platformNotifs.length;
+
   const pendingRequests =
     // derive from local state if available so UI updates instantly via sockets
     (pendingRequestsList.length > 0
@@ -60,9 +74,9 @@ const Header = () => {
       : connectionsData?.connections?.filter((c) => {
           const recipientId = c?.recipient?._id || c?.recipient;
           return c.status === "pending" && recipientId === currentUserId;
-        }) || []) ;
+        }) || []);
 
-  console.log("🔔 Current pending requests:", pendingRequests.length);
+  const totalBadge = pendingRequests.length + unreadNotifCount;
 
   useEffect(() => {
     darkMode
@@ -235,7 +249,11 @@ const Header = () => {
   const menuItems = [
     { label: "Home", icon: Home, onClick: () => navigate("/home") },
     { label: "My Matches", icon: Users, onClick: () => navigate("/matches") },
+    { label: "Marketplace", icon: ShoppingBag, onClick: () => navigate("/marketplace") },
+    { label: "Swaps", icon: ArrowLeftRight, onClick: () => navigate("/swaps") },
+    { label: "Community", icon: Trophy, onClick: () => navigate("/community") },
     { label: "Dashboard", icon: Layout, onClick: () => navigate("/dashboard") },
+    ...(authUser?.role === "admin" ? [{ label: "Admin", icon: Shield, onClick: () => navigate("/admin") }] : []),
   ];
 
   const handleProfile = () => navigate("/profile");
@@ -272,26 +290,93 @@ const Header = () => {
               </button>
             ))}
 
-            {/* Notifications */}
+            {/* Unified Notifications Bell */}
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setIsRequestsOpen((prev) => !prev)}
-                className="relative px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+                className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+                title="Notifications"
               >
                 <Bell className="w-5 h-5" />
-                {pendingRequests.length > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-xs text-white rounded-full flex items-center justify-center animate-pulse">
-                    {pendingRequests.length}
+                {totalBadge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-xs text-white rounded-full flex items-center justify-center font-bold animate-pulse">
+                    {totalBadge > 9 ? '9+' : totalBadge}
                   </span>
                 )}
               </button>
 
-              <ConnectionRequests 
-                open={isRequestsOpen} 
-                requests={pendingRequests}
-                loading={requestsLoading}
-                onUpdate={refetchRequests}
-              />
+              {/* Unified dropdown */}
+              {isRequestsOpen && (
+                <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-800 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
+                  {/* Connection requests section */}
+                  {pendingRequests.length > 0 && (
+                    <div>
+                      <div className="px-4 pt-3 pb-1">
+                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Connection Requests</p>
+                      </div>
+                      <ConnectionRequests
+                        open={true}
+                        inline={true}
+                        requests={pendingRequests}
+                        loading={requestsLoading}
+                        onUpdate={refetchRequests}
+                      />
+                    </div>
+                  )}
+
+                  {/* Platform notifications section */}
+                  {platformNotifs.length > 0 && (
+                    <div>
+                      <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Notifications</p>
+                        <button
+                          onClick={async () => {
+                            await Promise.all(platformNotifs.map((n) => markRead(n._id).unwrap().catch(() => null)));
+                            refetchNotifs();
+                          }}
+                          className="text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1 hover:underline"
+                        >
+                          <CheckCheck className="w-3 h-3" /> Mark all read
+                        </button>
+                      </div>
+                      <div className="max-h-52 overflow-y-auto">
+                        {platformNotifs.slice(0, 5).map((n) => (
+                          <button
+                            key={n._id}
+                            onClick={() => {
+                              markRead(n._id);
+                              refetchNotifs();
+                              if (n.link) navigate(n.link);
+                              setIsRequestsOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition border-b border-gray-100 dark:border-slate-700 last:border-0"
+                          >
+                            <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{n.title}</p>
+                            {n.message && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">{n.message}</p>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty state */}
+                  {pendingRequests.length === 0 && platformNotifs.length === 0 && (
+                    <div className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
+                      You're all caught up!
+                    </div>
+                  )}
+
+                  {/* Footer link */}
+                  <div className="border-t border-gray-100 dark:border-slate-700">
+                    <button
+                      onClick={() => { navigate('/notifications'); setIsRequestsOpen(false); }}
+                      className="w-full px-4 py-3 text-sm text-purple-600 dark:text-purple-400 flex items-center justify-center gap-1 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
+                    >
+                      View all notifications <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Theme Toggle */}
