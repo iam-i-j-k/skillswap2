@@ -1,9 +1,9 @@
 
-import React,{ useState } from "react"
+import React, { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { useRegisterMutation } from "../services/authApi";
+import { useRegisterMutation, useResendVerificationMutation } from "../services/authApi";
 import { setCredentials } from "../features/auth/authSlice"
-import { X, Check, ChevronDown, Loader2, Eye, EyeOff, Sparkles, Plus } from "lucide-react"
+import { X, Check, ChevronDown, Loader2, Eye, EyeOff, Sparkles, Plus, Mail, Send, CheckCircle2 } from "lucide-react"
 import { useDispatch } from "react-redux";
 
 const PREDEFINED_SKILLS = [
@@ -161,9 +161,27 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showVerifyNotice, setShowVerifyNotice] = useState(false)
+  const [resendStatus, setResendStatus] = useState({ message: "", isSuccess: false });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [registerUser, { isLoading }] = useRegisterMutation();
+  const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
+
+  const handleResendInSignup = async () => {
+    setResendStatus({ message: "", isSuccess: false });
+    try {
+      const res = await resendVerification({ email: formData.email.trim() }).unwrap();
+      setResendStatus({
+        message: res?.message || "Verification email sent successfully! Please check your inbox and spam folder.",
+        isSuccess: true,
+      });
+    } catch (err) {
+      setResendStatus({
+        message: err?.data?.message || err?.data?.error || "Failed to resend verification email. Please try again.",
+        isSuccess: false,
+      });
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -285,9 +303,68 @@ const SignUp = () => {
             </div>
           )}
           {showVerifyNotice && (
-            <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-2xl text-green-800 dark:text-green-200 text-center mt-8">
-              <Check className="inline w-6 h-6 mr-2 align-middle" />
-              Check your email to verify your account.
+            <div className="p-6 sm:p-8 bg-slate-50 dark:bg-white/5 border border-purple-200 dark:border-purple-500/20 rounded-3xl text-center space-y-4">
+              <div className="w-14 h-14 mx-auto rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Mail className="w-7 h-7" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Verify Your Email
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                We've sent a verification link to{" "}
+                <span className="font-semibold text-purple-600 dark:text-purple-400">
+                  {formData.email}
+                </span>
+                . Please click the link to activate your account.
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Can't find the email? Check your spam/junk or promotions folder.
+              </p>
+
+              {resendStatus.message && (
+                <div
+                  className={`p-3 rounded-xl text-xs flex items-center justify-center gap-2 ${
+                    resendStatus.isSuccess
+                      ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20"
+                      : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20"
+                  }`}
+                >
+                  {resendStatus.isSuccess ? (
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  ) : (
+                    <X className="w-4 h-4 flex-shrink-0" />
+                  )}
+                  <span>{resendStatus.message}</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <button
+                  type="button"
+                  onClick={handleResendInSignup}
+                  disabled={isResending}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-800 dark:text-white transition-colors disabled:opacity-50"
+                >
+                  {isResending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Resend Verification Email
+                    </>
+                  )}
+                </button>
+
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/25"
+                >
+                  Go to Login
+                </Link>
+              </div>
             </div>
           )}
           {!showVerifyNotice && (

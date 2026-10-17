@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../features/auth/authSlice";
 import React, { useState } from "react";
-import { useLoginMutation } from "../services/authApi";
+import { useLoginMutation, useResendVerificationMutation } from "../services/authApi";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Loader2,
@@ -11,6 +11,8 @@ import {
   Eye,
   EyeOff,
   Sparkles,
+  CheckCircle2,
+  Send,
 } from "lucide-react";
 
 const Login = () => {
@@ -21,12 +23,36 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [resendStatus, setResendStatus] = useState({ message: "", isSuccess: false });
 
   const [login, { isLoading }] = useLoginMutation();
+  const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
+
+  const handleResendVerification = async () => {
+    if (!email.trim()) {
+      setError("Please enter your email address first so we can send the verification link.");
+      return;
+    }
+    setResendStatus({ message: "", isSuccess: false });
+    try {
+      const res = await resendVerification({ email: email.trim() }).unwrap();
+      setResendStatus({
+        message: res?.message || "Verification email sent successfully! Please check your inbox and spam folder.",
+        isSuccess: true,
+      });
+      setError("");
+    } catch (err) {
+      setResendStatus({
+        message: err?.data?.message || err?.data?.error || "Failed to send verification email. Please try again later.",
+        isSuccess: false,
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setResendStatus({ message: "", isSuccess: false });
 
     try {
       const res = await login({ email, password }).unwrap();
@@ -58,9 +84,54 @@ const Login = () => {
         {/* Login Card */}
         <div className="bg-white dark:bg-slate-800 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
           {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center gap-3 text-red-600 dark:text-red-400">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <p className="text-sm">{error}</p>
+            <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+
+              {error.toLowerCase().includes("verify") && (
+                <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <span className="text-xs text-red-500 dark:text-red-300">
+                    Didn't get the email or link expired?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                  >
+                    {isResending ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        Resend Verification Email
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {resendStatus.message && (
+            <div
+              className={`mb-6 p-4 rounded-2xl border flex items-center gap-3 ${
+                resendStatus.isSuccess
+                  ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                  : "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400"
+              }`}
+            >
+              {resendStatus.isSuccess ? (
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              )}
+              <p className="text-sm font-medium">{resendStatus.message}</p>
             </div>
           )}
 
