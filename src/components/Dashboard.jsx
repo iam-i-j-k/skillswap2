@@ -125,23 +125,25 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen w-full bg-gray-50 dark:bg-slate-900 overflow-x-hidden">
       {/* COVER SECTION */}
       <div className="relative w-full">
-        <div className="h-24 sm:h-32 w-full bg-gradient-to-r from-purple-500 to-pink-500">
-          {profile?.user?.coverPhoto && (
+        <div className="h-28 sm:h-36 md:h-44 w-full relative overflow-hidden bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600">
+          {profile?.user?.coverPhoto ? (
             <img
               src={profile.user.coverPhoto}
               className="w-full h-full object-cover"
               alt="Cover"
             />
+          ) : (
+            <div className="w-full h-full opacity-30 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white to-transparent" />
           )}
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 -mt-10 sm:-mt-8">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 pt-2">
             {/* Avatar */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-lg border-4 border-white dark:border-slate-900 flex-shrink-0 mx-auto sm:mx-0">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-xl border-4 border-white dark:border-slate-900 flex-shrink-0 mx-auto sm:mx-0 -mt-12 sm:-mt-14 relative z-10 bg-white dark:bg-slate-800">
               {profile?.user?.avatar ? (
                 <img
                   src={profile.user.avatar}
@@ -160,30 +162,30 @@ const Dashboard = () => {
             </div>
 
             {/* Info */}
-            <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <div className="flex-1 text-center sm:text-left min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">
                 {greeting}, {profile?.user?.username}! 👋
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Ready to connect and learn today?
               </p>
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-2 justify-center sm:justify-end flex-wrap">
+            <div className="flex gap-2 justify-center sm:justify-end flex-wrap flex-shrink-0">
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="px-4 py-2 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-slate-600 hover:border-gray-400 dark:hover:border-slate-500 text-sm font-medium transition-colors"
+                className="px-3.5 sm:px-4 py-2 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl border border-gray-300 dark:border-slate-600 hover:border-gray-400 dark:hover:border-slate-500 text-xs sm:text-sm font-medium transition-colors shadow-sm"
               >
-                <Edit2 className="inline w-4 h-4 mr-2" />
+                <Edit2 className="inline w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                 Edit
               </button>
 
               <Link
                 to="/home"
-                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 text-sm font-medium transition"
+                className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:opacity-90 text-xs sm:text-sm font-medium transition shadow-sm"
               >
-                <Users className="inline w-4 h-4 mr-2" />
+                <Users className="inline w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                 Connect
               </Link>
             </div>

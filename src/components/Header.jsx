@@ -259,34 +259,33 @@ const Header = () => {
   const handleProfile = () => navigate("/profile");
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/20 dark:border-white/10 shadow-lg">
-      <div className="container mx-auto px-4">
-        
-
-        <div className="flex items-center justify-between py-4">
+    <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-sm">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between py-3.5">
           {/* Logo */}
-          <a href="/dashboard" className="flex items-center space-x-3 group">
+          <a href="/dashboard" className="flex items-center space-x-2.5 sm:space-x-3 group flex-shrink-0">
             <div className="relative">
-              <div className="absolute -inset-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition" />
-              <div className="relative w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Sparkles className="h-6 w-6 text-white" />
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl blur-md opacity-30 group-hover:opacity-50 transition" />
+              <div className="relative w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight">
               Skill<span className="text-purple-600 dark:text-purple-400">Swap</span>
             </h1>
           </a>
 
           {/* Desktop Menu */}
-          <nav className="hidden md:flex items-center space-x-2">
+          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
             {menuItems.map((item) => (
               <button
                 key={item.label}
                 onClick={item.onClick}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+                className="flex items-center gap-1.5 px-2.5 py-2 xl:px-3.5 xl:py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300 text-sm font-medium"
+                title={item.label}
               >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <item.icon className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" />
+                <span className="hidden xl:inline">{item.label}</span>
               </button>
             ))}
 
@@ -299,7 +298,7 @@ const Header = () => {
               >
                 <Bell className="w-5 h-5" />
                 {totalBadge > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-xs text-white rounded-full flex items-center justify-center font-bold animate-pulse">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-[10px] text-white rounded-full flex items-center justify-center font-bold animate-pulse">
                     {totalBadge > 9 ? '9+' : totalBadge}
                   </span>
                 )}
@@ -307,7 +306,7 @@ const Header = () => {
 
               {/* Unified dropdown */}
               {isRequestsOpen && (
-                <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-800 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
+                <div className="absolute right-0 mt-3 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
                   {/* Connection requests section */}
                   {pendingRequests.length > 0 && (
                     <div>
@@ -383,6 +382,7 @@ const Header = () => {
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+              title="Toggle theme"
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -426,28 +426,49 @@ const Header = () => {
             </div>
           </nav>
 
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center gap-2">
+          {/* Mobile Menu & Controls */}
+          <div className="lg:hidden flex items-center gap-1.5 sm:gap-2">
+            {/* Mobile Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setIsRequestsOpen((prev) => !prev)}
+                className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {totalBadge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-[10px] text-white rounded-full flex items-center justify-center font-bold animate-pulse">
+                    {totalBadge > 9 ? '9+' : totalBadge}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Mobile Theme Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+              title="Toggle theme"
             >
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
+
+            {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+              title="Open menu"
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
           <nav
             ref={mobileMenuRef}
-            className="md:hidden py-4 px-2 space-y-2 border-t border-gray-200 dark:border-white/10"
+            className="lg:hidden py-4 px-2 space-y-1 border-t border-gray-200 dark:border-white/10"
           >
             {menuItems.map((item) => (
               <button
@@ -456,28 +477,48 @@ const Header = () => {
                   item.onClick();
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300 text-sm font-medium"
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 <span>{item.label}</span>
               </button>
             ))}
+
+            <button
+              onClick={() => {
+                navigate("/notifications");
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300 text-sm font-medium"
+            >
+              <div className="flex items-center space-x-3">
+                <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <span>Notifications</span>
+              </div>
+              {totalBadge > 0 && (
+                <span className="px-2 py-0.5 bg-red-500 text-xs text-white rounded-full font-bold">
+                  {totalBadge}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => {
                 handleProfile();
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300 text-sm font-medium"
             >
-              <User className="w-5 h-5" />
+              <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               <span>Profile</span>
             </button>
+
             <button
               onClick={() => {
                 handleLogout();
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition text-red-600 dark:text-red-400"
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition text-red-600 dark:text-red-400 text-sm font-medium"
             >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>

@@ -82,7 +82,7 @@ function AppWithRouter({ token }) {
     toast.error(err.response?.data?.error || err.message)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen w-full bg-gray-50 dark:bg-slate-900 overflow-x-hidden">
       <CheckConnection />
 
       {/* Header condition */}
@@ -90,7 +90,7 @@ function AppWithRouter({ token }) {
         location.pathname !== "/signup" &&
         !location.pathname.startsWith("/chat/") && <Header />}
 
-      <main>
+      <main className="w-full overflow-x-hidden">
         <Routes>
           <Route path="/profile" element={<Profile />} />
 
