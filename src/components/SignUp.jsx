@@ -1,3 +1,4 @@
+
 import React,{ useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useRegisterMutation } from "../services/authApi";
@@ -151,7 +152,12 @@ const SignUp = () => {
   })
   const [error, setError] = useState("")
   const [showSkillsDropdown, setShowSkillsDropdown] = useState(false)
-  const [customSkill, setCustomSkill] = useState("")
+  const [customInputs, setCustomInputs] = useState({
+    skills: "",
+    offeredSkills: "",
+    desiredSkills: "",
+    learningGoals: "",
+  })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showVerifyNotice, setShowVerifyNotice] = useState(false)
@@ -170,14 +176,18 @@ const SignUp = () => {
     }))
   }
 
+  const handleCustomInputChange = (field, value) => {
+    setCustomInputs((prev) => ({ ...prev, [field]: value }))
+  }
+
   const addCustomSkill = (field) => {
-    const value = customSkill.trim();
+    const value = (customInputs[field] || "").trim();
     if (!value) return;
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field].includes(value) ? prev[field] : [...prev[field], value],
     }))
-    setCustomSkill("")
+    setCustomInputs((prev) => ({ ...prev, [field]: "" }))
   }
 
   const removeSkill = (field, skillToRemove) => {
@@ -191,6 +201,11 @@ const SignUp = () => {
     e.preventDefault()
     setError("")
 
+    if (formData.username.trim().length < 3) {
+      setError("Username must be at least 3 characters long")
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
       return
@@ -201,25 +216,35 @@ const SignUp = () => {
       return
     }
 
+    if (formData.bio && formData.bio.length > 1000) {
+      setError("Bio must be at most 1000 characters")
+      return
+    }
+
+    if (formData.skillContext && formData.skillContext.length > 1000) {
+      setError("Skill context must be at most 1000 characters")
+      return
+    }
+
     try {
       const { username, email, password, skills, offeredSkills, desiredSkills, skillContext, learningGoals, skillLevel, bio } = formData;
 
       await registerUser({
-        username,
-        email,
+        username: username.trim(),
+        email: email.trim(),
         password,
         skills,
         offeredSkills,
         desiredSkills,
-        skillContext,
+        skillContext: skillContext.trim(),
         learningGoals,
         skillLevel,
-        bio
+        bio: bio.trim()
       }).unwrap();
       setShowVerifyNotice(true);
     } catch (err) {
       console.error(err);
-      const message = err?.data?.message || err?.data?.error || err?.error || err?.status || 'Registration failed. Please try again.';
+      const message = err?.data?.error || err?.data?.message || err?.error || err?.status || 'Registration failed. Please try again.';
       setError(message);
     }
   }
@@ -393,8 +418,9 @@ const SignUp = () => {
                     <div className="flex gap-2 mb-4">
                       <input
                         type="text"
-                        value={customSkill}
-                        onChange={(e) => setCustomSkill(e.target.value)}
+                        value={customInputs.skills}
+                        onChange={(e) => handleCustomInputChange('skills', e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSkill('skills'); } }}
                         placeholder="Add custom skill..."
                         className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
@@ -440,8 +466,9 @@ const SignUp = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={customSkill}
-                  onChange={(e) => setCustomSkill(e.target.value)}
+                  value={customInputs.offeredSkills}
+                  onChange={(e) => handleCustomInputChange('offeredSkills', e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSkill('offeredSkills'); } }}
                   placeholder="Add skills you can teach..."
                   className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
                 />
@@ -464,8 +491,9 @@ const SignUp = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={customSkill}
-                  onChange={(e) => setCustomSkill(e.target.value)}
+                  value={customInputs.desiredSkills}
+                  onChange={(e) => handleCustomInputChange('desiredSkills', e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSkill('desiredSkills'); } }}
                   placeholder="Add skills you want to learn..."
                   className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
                 />
@@ -474,13 +502,17 @@ const SignUp = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="skillContext" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Skill Context</label>
+              <div className="flex justify-between items-center">
+                <label htmlFor="skillContext" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Skill Context</label>
+                <span className="text-xs text-gray-400">{(formData.skillContext || '').length}/1000</span>
+              </div>
               <textarea
                 id="skillContext"
                 name="skillContext"
+                maxLength={1000}
                 value={formData.skillContext}
                 onChange={handleChange}
-                rows={2}
+                rows={3}
                 className="block w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
                 placeholder="Describe your learning focus or current projects..."
               />
@@ -516,8 +548,9 @@ const SignUp = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={customSkill}
-                  onChange={(e) => setCustomSkill(e.target.value)}
+                  value={customInputs.learningGoals}
+                  onChange={(e) => handleCustomInputChange('learningGoals', e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSkill('learningGoals'); } }}
                   placeholder="Add a learning goal..."
                   className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
                 />
@@ -527,12 +560,16 @@ const SignUp = () => {
 
             {/* Bio Input */}
             <div className="space-y-2">
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Bio
-              </label>
+              <div className="flex justify-between items-center">
+                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Bio
+                </label>
+                <span className="text-xs text-gray-400">{(formData.bio || '').length}/1000</span>
+              </div>
               <textarea
                 id="bio"
                 name="bio"
+                maxLength={1000}
                 required
                 value={formData.bio}
                 onChange={handleChange}
