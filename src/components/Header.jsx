@@ -44,6 +44,7 @@ const Header = () => {
   });
 
   const notificationsRef = useRef(null);
+  const notificationsMobileRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const profileMenuRef = useRef(null);
 
@@ -73,7 +74,8 @@ const Header = () => {
       ? pendingRequestsList
       : connectionsData?.connections?.filter((c) => {
           const recipientId = c?.recipient?._id || c?.recipient;
-          return c.status === "pending" && recipientId === currentUserId;
+          const currentId = currentUserId?._id || currentUserId;
+          return c.status === "pending" && (!recipientId || String(recipientId) === String(currentId));
         }) || []);
 
   const totalBadge = pendingRequests.length + unreadNotifCount;
@@ -89,7 +91,11 @@ const Header = () => {
   // Close menus when clicking outside
   useEffect(() => {
     const handler = (e) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(e.target) &&
+        (!notificationsMobileRef.current || !notificationsMobileRef.current.contains(e.target))
+      ) {
         setIsRequestsOpen(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
@@ -258,6 +264,82 @@ const Header = () => {
 
   const handleProfile = () => navigate("/profile");
 
+  const renderNotificationDropdown = () => (
+    <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-800 shadow-2xl rounded-2xl border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
+      {/* Connection requests section */}
+      {pendingRequests.length > 0 && (
+        <div>
+          <div className="px-4 pt-3 pb-1.5 border-b border-gray-100 dark:border-slate-700/60 flex items-center justify-between">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              Connection Requests ({pendingRequests.length})
+            </p>
+          </div>
+          <ConnectionRequests
+            open={true}
+            inline={true}
+            requests={pendingRequests}
+            loading={requestsLoading}
+            onUpdate={refetchRequests}
+          />
+        </div>
+      )}
+
+      {/* Platform notifications section */}
+      {platformNotifs.length > 0 && (
+        <div className={pendingRequests.length > 0 ? "border-t border-gray-200 dark:border-slate-700" : ""}>
+          <div className="px-4 pt-3 pb-1.5 flex items-center justify-between border-b border-gray-100 dark:border-slate-700/60">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              Notifications ({platformNotifs.length})
+            </p>
+            <button
+              onClick={async () => {
+                await Promise.all(platformNotifs.map((n) => markRead(n._id).unwrap().catch(() => null)));
+                refetchNotifs();
+              }}
+              className="text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1 hover:underline font-medium"
+            >
+              <CheckCheck className="w-3.5 h-3.5" /> Mark all read
+            </button>
+          </div>
+          <div className="max-h-52 overflow-y-auto divide-y divide-gray-100 dark:border-slate-700/60">
+            {platformNotifs.slice(0, 5).map((n) => (
+              <button
+                key={n._id}
+                onClick={() => {
+                  markRead(n._id);
+                  refetchNotifs();
+                  if (n.link) navigate(n.link);
+                  setIsRequestsOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/40 transition"
+              >
+                <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{n.title}</p>
+                {n.message && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">{n.message}</p>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {pendingRequests.length === 0 && platformNotifs.length === 0 && (
+        <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          You're all caught up!
+        </div>
+      )}
+
+      {/* Footer link */}
+      <div className="border-t border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50">
+        <button
+          onClick={() => { navigate('/notifications'); setIsRequestsOpen(false); }}
+          className="w-full px-4 py-3 text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400 flex items-center justify-center gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+        >
+          View all notifications <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 shadow-sm">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
@@ -305,77 +387,7 @@ const Header = () => {
               </button>
 
               {/* Unified dropdown */}
-              {isRequestsOpen && (
-                <div className="absolute right-0 mt-3 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
-                  {/* Connection requests section */}
-                  {pendingRequests.length > 0 && (
-                    <div>
-                      <div className="px-4 pt-3 pb-1">
-                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Connection Requests</p>
-                      </div>
-                      <ConnectionRequests
-                        open={true}
-                        inline={true}
-                        requests={pendingRequests}
-                        loading={requestsLoading}
-                        onUpdate={refetchRequests}
-                      />
-                    </div>
-                  )}
-
-                  {/* Platform notifications section */}
-                  {platformNotifs.length > 0 && (
-                    <div>
-                      <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Notifications</p>
-                        <button
-                          onClick={async () => {
-                            await Promise.all(platformNotifs.map((n) => markRead(n._id).unwrap().catch(() => null)));
-                            refetchNotifs();
-                          }}
-                          className="text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1 hover:underline"
-                        >
-                          <CheckCheck className="w-3 h-3" /> Mark all read
-                        </button>
-                      </div>
-                      <div className="max-h-52 overflow-y-auto">
-                        {platformNotifs.slice(0, 5).map((n) => (
-                          <button
-                            key={n._id}
-                            onClick={() => {
-                              markRead(n._id);
-                              refetchNotifs();
-                              if (n.link) navigate(n.link);
-                              setIsRequestsOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition border-b border-gray-100 dark:border-slate-700 last:border-0"
-                          >
-                            <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{n.title}</p>
-                            {n.message && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">{n.message}</p>}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Empty state */}
-                  {pendingRequests.length === 0 && platformNotifs.length === 0 && (
-                    <div className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
-                      You're all caught up!
-                    </div>
-                  )}
-
-                  {/* Footer link */}
-                  <div className="border-t border-gray-100 dark:border-slate-700">
-                    <button
-                      onClick={() => { navigate('/notifications'); setIsRequestsOpen(false); }}
-                      className="w-full px-4 py-3 text-sm text-purple-600 dark:text-purple-400 flex items-center justify-center gap-1 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
-                    >
-                      View all notifications <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              )}
+              {isRequestsOpen && renderNotificationDropdown()}
             </div>
 
             {/* Theme Toggle */}
@@ -429,7 +441,7 @@ const Header = () => {
           {/* Mobile Menu & Controls */}
           <div className="lg:hidden flex items-center gap-1.5 sm:gap-2">
             {/* Mobile Notification Bell */}
-            <div className="relative">
+            <div className="relative" ref={notificationsMobileRef}>
               <button
                 onClick={() => setIsRequestsOpen((prev) => !prev)}
                 className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition text-gray-700 dark:text-gray-300"
@@ -442,6 +454,9 @@ const Header = () => {
                   </span>
                 )}
               </button>
+
+              {/* Mobile Dropdown */}
+              {isRequestsOpen && renderNotificationDropdown()}
             </div>
 
             {/* Mobile Theme Toggle */}

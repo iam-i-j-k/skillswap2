@@ -8,10 +8,11 @@ import {
 } from "../services/connectionsApi";
 
 const ConnectionRequests = ({ 
-  open, 
+  open = true, 
   requests = [], 
   loading = false, 
-  onUpdate 
+  onUpdate,
+  inline = false,
 }) => {
   const currentUserId = useSelector((state) => state.auth.user?._id);
 
@@ -22,11 +23,7 @@ const ConnectionRequests = ({
     try {
       console.log("✅ Accepting connection request:", id);
       await acceptRequest(id).unwrap();
-      // Call the onUpdate callback to refresh the data in parent
-      if (onUpdate) {
-        console.log("🔄 Calling onUpdate to refresh data");
-        onUpdate();
-      }
+      if (onUpdate) onUpdate();
     } catch (err) {
       console.error("Accept error:", err);
     }
@@ -36,90 +33,101 @@ const ConnectionRequests = ({
     try {
       console.log("❌ Declining connection request:", id);
       await rejectRequest(id).unwrap();
-      // Call the onUpdate callback to refresh the data in parent
-      if (onUpdate) {
-        console.log("🔄 Calling onUpdate to refresh data");
-        onUpdate();
-      }
+      if (onUpdate) onUpdate();
     } catch (err) {
       console.error("Decline error:", err);
     }
   };
 
-  // NO socket listeners, NO data fetching - everything comes from props
+  if (!open) return null;
+
+  const content = (
+    <div className="w-full">
+      {loading ? (
+        <div className="px-4 py-4 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Loading requests...</p>
+        </div>
+      ) : requests.length === 0 ? (
+        <div className="px-4 py-4 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">No new connection requests</p>
+        </div>
+      ) : (
+        <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700/60">
+          {requests.map((request) => {
+            const requester = request.requester;
+            const displayName = requester?.username || requester?.email || "SkillSwap User";
+            const initial = displayName.charAt(0).toUpperCase();
+
+            return (
+              <div
+                key={request._id}
+                className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/40 transition flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm">
+                    {initial}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {displayName}
+                    </p>
+                    {requester?.skills?.length > 0 ? (
+                      <p className="text-xs text-purple-600 dark:text-purple-400 truncate">
+                        {requester.skills.slice(0, 2).join(", ")}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        Wants to connect
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button
+                    onClick={() => handleAccept(request._id)}
+                    title="Accept connection"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition shadow-sm"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Accept</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleDecline(request._id)}
+                    title="Decline request"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 text-xs font-medium transition"
+                  >
+                    <XMark className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Decline</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  if (inline) {
+    return content;
+  }
 
   return (
     <div className="relative">
-      {open && (
-        <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 py-2 z-50">
-          
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Connection Requests
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Manage your pending connections
-            </p>
-          </div>
-
-          {loading ? (
-            <div className="px-6 py-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400">Loading...</p>
-            </div>
-          ) : requests.length === 0 ? (
-            <div className="px-6 py-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400">
-                No new notifications
-              </p>
-            </div>
-          ) : (
-            <div className="max-h-96 overflow-y-auto">
-              {requests.map((request) => (
-                <div
-                  key={request._id}
-                  className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-white/5 border-b dark:border-white/5"
-                >
-                  <div className="flex items-start gap-4">
-
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
-                      {request.requester?.username?.charAt(0)?.toUpperCase() ||
-                        request.requester?.email?.charAt(0)?.toUpperCase() ||
-                        "U"}
-                    </div>
-
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {request.requester?.username || "Unknown User"}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        {request.requester?.email || "No email"}
-                      </p>
-
-                      <div className="flex items-center gap-2 mt-3">
-                        <button
-                          onClick={() => handleAccept(request._id)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full hover:opacity-90 transition"
-                        >
-                          <Check className="w-3 h-3" /> Accept
-                        </button>
-
-                        <button
-                          onClick={() => handleDecline(request._id)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 text-xs rounded-full hover:bg-gray-200 dark:hover:bg-white/20 transition"
-                        >
-                          <XMark className="w-3 h-3" /> Decline
-                        </button>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
+      <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 py-2 z-50">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Connection Requests
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Manage your pending connections
+          </p>
         </div>
-      )}
+        {content}
+      </div>
     </div>
   );
 };
